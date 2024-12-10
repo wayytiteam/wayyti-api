@@ -96,7 +96,7 @@ class PriceUpdate extends Command
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has went up in price',
-                                    'google_product_id' => $tracked_product->id,
+                                    'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_up'
                                 ]);
                                 if($user->fcm_token) {
