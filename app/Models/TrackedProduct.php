@@ -190,7 +190,11 @@ class TrackedProduct extends Model
             ->where('requirement_value', '>', (int)$total_saved_value)
             ->orderBy('requirement_value', 'asc')
             ->first();
-        $next_saving_badge->requirement_value = $currency->symbol.$next_saving_badge->requirement_value;
+        if($next_saving_badge) {
+            $next_saving_badge->requirement_value = $currency->symbol.$next_saving_badge->requirement_value;
+        } else {
+            $next_saving_badge = null;
+        }
         $current_savings = array(
             'current_savings' => "{$current_savings_str}",
             'savings_start_date' => $savings_start_date,
