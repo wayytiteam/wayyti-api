@@ -16,6 +16,7 @@ class Point extends Model
         'attendance_id',
         'tracked_product_id',
         'google_product_id',
+        'referral_id',
         'country'
     ];
 }

@@ -79,7 +79,7 @@ class TrackedProductController extends Controller
         $single_product = $request->product_id;
         // $products = $request->folders;
         $user = User::find(Auth::id());
-        // try {
+        try {
             if($user) {
                 if($products) {
                     $registered_products = [];
@@ -177,15 +177,16 @@ class TrackedProductController extends Controller
                     }
                     return response()->json($new_tracked_product, 200);
                 }
+
                 return response()->json($tracked_products, 200);
             } else {
                 throw new Exception("User not found");
             }
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         "error" => $e->getMessage()
-        //     ], 400);
-        // }
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -200,7 +201,7 @@ class TrackedProductController extends Controller
     public function google_product_details(Request $request)
     {
         $user = User::find(Auth::id());
-        try {
+        // try {
             $google_product = GoogleProduct::where('product_id', $request->product_id)
                 ->where('merchant', $request->merchant)
                 ->with('tracked_products')
@@ -220,11 +221,11 @@ class TrackedProductController extends Controller
             }
             return $tracked_product;
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], $e->getMessage());
-        }
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'message' => $e->getMessage()
+        //     ], $e->getMessage());
+        // }
     }
 
     /**
