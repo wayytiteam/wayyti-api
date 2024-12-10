@@ -68,6 +68,7 @@ class TrackedProduct extends Model
                             'user_id' => $user_id,
                             'badge_id' => $item_tracker_badge->id,
                             'message' => 'Achievement Unlocked',
+                            'description' => 'You have unlocked'.' '.$item_tracker_badge->name.' '.'badge',
                             'type' => 'achievement_unlocked'
                         ]);
                         if($user->fcm_token) {
@@ -123,6 +124,7 @@ class TrackedProduct extends Model
         } else {
             $savings_start_date = null;
         }
+
         $total_saved_value = $tracked_items;
         $currency = Currency::where('country_name', $user->country)->first();
         $current_savings_str = $currency->symbol.(float)$total_saved_value;
@@ -146,6 +148,7 @@ class TrackedProduct extends Model
                                 'user_id' => $user_id,
                                 'badge_id' => $existing_savings_badge->id,
                                 'message' => 'Achievement Unlocked',
+                                'description' => 'You have unlocked'.' '.$existing_savings_badge->name.' '.'badge',
                                 'type' => 'achievement_unlocked'
                             ]);
                             if($user->fcm_token) {
