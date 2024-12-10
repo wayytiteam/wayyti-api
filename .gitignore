@@ -1,0 +1,40 @@
+# Cache files
+/.phpunit.cache
+.phpunit.result.cache
+
+# Node.js dependencies
+/node_modules
+
+# Public build and temporary files
+/public/build
+/public/hot
+/public/storage
+
+# Storage and keys
+/storage/*.key
+/storage/logs/*
+
+# Vendor dependencies
+/vendor
+
+# Environment files
+.env
+.env.backup
+.env.production
+
+# IDE and editor files
+/.phpactor.json
+/.fleet
+/.idea
+/.vscode
+/.zed
+
+# Homestead and configuration files
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Debug and error logs
+npm-debug.log
+yarn-error.log
+smartsale-private-key.json
