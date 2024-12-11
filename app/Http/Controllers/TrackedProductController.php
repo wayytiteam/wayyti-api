@@ -13,11 +13,7 @@ use App\Models\Badge;
 use App\Models\BadgeUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-use App\Models\Currency;
 use Exception;
-use Astrotomic\Intl\Countries;
-use PhpParser\Node\Expr\Throw_;
 
 class TrackedProductController extends Controller
 {

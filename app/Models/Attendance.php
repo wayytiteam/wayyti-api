@@ -66,6 +66,9 @@ class Attendance extends Model
             ->where('requirement_value', '>', $current_streak)
             ->orderBy('requirement_value', 'asc')
             ->first();
+        if(!$next_login_badge) {
+            $next_login_badge = null;
+        }
         $login_streak = array(
             'current_streak' => $current_streak,
             'current_badge' => $current_badge,

@@ -109,6 +109,9 @@ class TrackedProduct extends Model
             ->where('requirement_value', '>', $count_tracked_items)
             ->orderBy('requirement_value', 'asc')
             ->first();
+        if(!$next_item_tracker_badge) {
+            $next_item_tracker_badge = null;
+        }
         $items_tracked = array(
             'current_tracked_items' => $count_tracked_items,
             'current_badge' => $item_tracker_badge,

@@ -39,6 +39,9 @@ class Share extends Model
             ->orderBy('requirement_value', 'asc')
             ->where('requirement_value', '>', $count_shares)
             ->first();
+        if(!$next_badge) {
+            $next_badge = null;
+        }
         $share_deals = array(
             'current_shares' => $count_shares,
             'current_badge' => $current_badge,

@@ -32,6 +32,9 @@ class Referral extends Model
             ->orderBy('requirement_value', 'asc')
             ->where('requirement_value', '>', $count_referrals)
             ->first();
+        if(!$next_badge) {
+            $next_badge = null;
+        }
         $referrals = array(
             'current_shares' => $count_referrals,
             'current_badge' => $current_badge,
