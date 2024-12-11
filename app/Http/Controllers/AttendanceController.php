@@ -96,12 +96,13 @@ class AttendanceController extends Controller
                 Point::create([
                     'user_id' => $user->id,
                     'attendance_id' => $attendance->id,
-                    'points' => $existing_badge->badge->points_equivalent
+                    'points' => $existing_badge->badge->points_equivalent,
                 ]);
                 if($login_badge_acquired->points_equivalent > $existing_badge->badge->points_equivalent) {
                     $new_notification = Notification::create([
                         'user_id' => $user->id,
                         'message' => 'Achievement Unlocked',
+                        'description' => 'You have unlocked'.' '.$login_badge_acquired->name.' '.'badge',
                         'badge_id' => $login_badge_acquired->id,
                         'type' => 'achievement_unlocked'
                     ]);
@@ -123,8 +124,9 @@ class AttendanceController extends Controller
             $new_notification = Notification::create([
                 'user_id' => $user->id,
                 'message' => 'Achievement Unlocked',
+                'description' => 'You have unlocked'.' '.$login_badge_acquired->name.' '.'badge',
                 'badge_id' => $login_badge_acquired->id,
-                'type' => 'achivement_unlocked'
+                'type' => 'achievement_unlocked'
             ]);
             if($user->fcm_token) {
                 Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token, $new_notification);

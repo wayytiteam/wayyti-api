@@ -16,23 +16,23 @@ class PersonaSeeder extends Seeder
         $personas = [
             ['name' => 'The Bargain Hunter',
              'description' => 'Always on a look out for the best deals and discounts',
-             'image_path' => 'https://smartsale-bucket.s3.us-east-2.amazonaws.com/bargain-hunter.png'
+             'image_path' => env('AWS_URL').'/bargain-hunter.png'
             ],
             ['name' => 'Trendsetter',
              'description' => 'The first to have the latest products and trends',
-             'image_path' => 'https://smartsale-bucket.s3.us-east-2.amazonaws.com/trendsetter.png'
+             'image_path' => env('AWS_URL').'/trendsetter.png'
             ],
             ['name' => 'Conscious Shopper',
              'description' => 'Prefers eco-friendly and sustainable products',
-             'image_path' => 'https://smartsale-bucket.s3.us-east-2.amazonaws.com/conscious+Shopper.png'
+             'image_path' => env('AWS_URL').'/conscious+Shopper.png'
             ],
             ['name' => 'Tech Enthusiast',
              'description' => 'Geared towards the latest gadgets and innovations',
-             'image_path' => 'https://smartsale-bucket.s3.us-east-2.amazonaws.com/tech-enthusiast.png'
+             'image_path' => env('AWS_URL').'/tech-enthusiast.png'
             ],
             ['name' => 'Luxury Lover',
              'description' => 'Seeks out premium brands and luxury experiences',
-             'image_path' => 'https://smartsale-bucket.s3.us-east-2.amazonaws.com/luxury-lover.png'
+             'image_path' => env('AWS_URL').'/luxury-lover.png'
             ],
         ];
         $persona_list = Persona::get();

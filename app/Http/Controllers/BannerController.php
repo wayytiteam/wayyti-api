@@ -14,16 +14,9 @@ class BannerController extends Controller
      */
     public function index(Request $request)
     {
-        $active = $request->active;
-        $banners = Banner::query();
-        if($active) {
-            $banners->when($active === "true", function (Builder $query) {
-            $query->where('active', true);
-            });
-            $banners->when($active === "false", function (Builder $query) {
-                $query->where('active', false);
-            });
-        }
+        $banners = Banner::where('active', true)
+            ->orderBy('created_at', 'desc',)
+            ->limit(3);
         $banners = $banners->paginate(10);
 
         return response()->json($banners, 200);

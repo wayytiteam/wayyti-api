@@ -14,8 +14,6 @@ use App\Models\BadgeUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Exception;
-use Astrotomic\Intl\Countries;
-use PhpParser\Node\Expr\Throw_;
 
 class TrackedProductController extends Controller
 {
@@ -77,7 +75,7 @@ class TrackedProductController extends Controller
         $single_product = $request->product_id;
         // $products = $request->folders;
         $user = User::find(Auth::id());
-        // try {
+        try {
             if($user) {
                 if($products) {
                     $registered_products = [];
@@ -175,15 +173,16 @@ class TrackedProductController extends Controller
                     }
                     return response()->json($new_tracked_product, 200);
                 }
+
                 return response()->json($tracked_products, 200);
             } else {
                 throw new Exception("User not found");
             }
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         "error" => $e->getMessage()
-        //     ], 400);
-        // }
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -216,12 +215,11 @@ class TrackedProductController extends Controller
             } else {
                 Throw new Exception("This product is not yet tracked", 404);
             }
-            return $tracked_product;
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
-            ], $e->getMessage());
+            ], $e->getCode());
         }
     }
 
@@ -276,6 +274,7 @@ class TrackedProductController extends Controller
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => 'Achievement_unlocked',
+                                    'description' => 'You have unlocked'.' '.$point_equivalent_badge->name.' '.'badge',
                                     'type' => 'achievement_unlocked',
                                     'badge_id' => $get_current_badge->badge_id
                                 ]);
@@ -295,6 +294,7 @@ class TrackedProductController extends Controller
                         $new_notification = Notification::create([
                             'user_id' => $user->id,
                             'message' => 'Achievement_unlocked',
+                            'description' => 'You have unlocked'.' '.$point_equivalent_badge->name.' '.'badge',
                             'type' => 'achievement_unlocked',
                             'badge_id' => $point_equivalent_badge->id
                         ]);

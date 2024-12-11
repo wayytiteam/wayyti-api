@@ -89,14 +89,15 @@ class PriceUpdate extends Command
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);
                                 }
-                            } elseif($matching_item['price'] > $product->latest_price) {
+                            }
+                            if($matching_item['price'] > $product->latest_price) {
                                 $product->original_price = $product->latest_price;
                                 $product->latest_price = $item['price'];
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has went up in price',
-                                    'google_product_id' => $tracked_product->id,
+                                    'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_up'
                                 ]);
                                 if($user->fcm_token) {

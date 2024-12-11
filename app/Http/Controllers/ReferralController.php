@@ -9,6 +9,8 @@ use App\Models\BadgeUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Notification;
+use App\Models\Point;
 
 class ReferralController extends Controller
 {
@@ -38,7 +40,7 @@ class ReferralController extends Controller
         $user = User::find(Auth::id());
         try {
             if($user) {
-                Referral::create([
+                $new_referral = Referral::create([
                     'user_id' => $user->id
                 ]);
                 $count_referrals = Referral::where('user_id', $user->id)
@@ -54,15 +56,44 @@ class ReferralController extends Controller
                     ->first();
                 if($current_badge) {
                     if($current_badge->badge_id != $badge_equivalent->id) {
+                        if($current_badge->badge->requirement_value < $badge_equivalent->requirement_value) {
+                            $new_notification = Notification::create([
+                                'user_id' => $user->id,
+                                'badge_id' => $badge_equivalent->id,
+                                'message' => 'Achievement Unlocked',
+                                'description' => 'You have unlocked'.' '.$badge_equivalent->name.' '.'badge',
+                                'type' => 'achievement_unlocked'
+                            ]);
+                            if($user->fcm_token) {
+                                Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                            }
+                        }
                         $current_badge->badge_id = $badge_equivalent->id;
                         $current_badge->save();
                     }
                 } else {
-                    BadgeUser::create([
-                        'user_id' => $user->id,
-                        'badge_id' => $badge_equivalent->id
-                    ]);
+                    if($badge_equivalent) {
+                        BadgeUser::create([
+                            'user_id' => $user->id,
+                            'badge_id' => $badge_equivalent->id
+                        ]);
+                        $new_notification = Notification::create([
+                            'user_id' => $user->id,
+                            'badge_id' => $badge_equivalent->id,
+                            'message' => 'Achievement Unlocked',
+                            'description' => 'You have unlocked'.' '.$badge_equivalent->name.' '.'badge',
+                            'type' => 'achievement_unlocked'
+                        ]);
+                        if($user->fcm_token) {
+                            Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                        }
+                    }
                 }
+                Point::create([
+                    'user_id' => $user->id,
+                    'points' => 20,
+                    'referral_id' => $new_referral->id
+                ]);
                 return response()->json(null, 200);
             }
         } catch (\Exception $e) {

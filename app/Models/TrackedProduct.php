@@ -68,6 +68,7 @@ class TrackedProduct extends Model
                             'user_id' => $user_id,
                             'badge_id' => $item_tracker_badge->id,
                             'message' => 'Achievement Unlocked',
+                            'description' => 'You have unlocked'.' '.$item_tracker_badge->name.' '.'badge',
                             'type' => 'achievement_unlocked'
                         ]);
                         if($user->fcm_token) {
@@ -92,12 +93,25 @@ class TrackedProduct extends Model
                     'user_id' => $user_id,
                     'country' => $user->country
                 ]);
+                $new_notification = Notification::create([
+                    'user_id' => $user_id,
+                    'badge_id' => $item_tracker_badge->id,
+                    'message' => 'Achievement Unlocked',
+                    'description' => 'You have unlocked'.' '.$item_tracker_badge->name.' '.'badge',
+                    'type' => 'achievement_unlocked'
+                ]);
+                if($user->fcm_token) {
+                    Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                }
             }
         }
         $next_item_tracker_badge = Badge::where('type', 'tracker')
             ->where('requirement_value', '>', $count_tracked_items)
             ->orderBy('requirement_value', 'asc')
             ->first();
+        if(!$next_item_tracker_badge) {
+            $next_item_tracker_badge = null;
+        }
         $items_tracked = array(
             'current_tracked_items' => $count_tracked_items,
             'current_badge' => $item_tracker_badge,
@@ -123,6 +137,7 @@ class TrackedProduct extends Model
         } else {
             $savings_start_date = null;
         }
+
         $total_saved_value = $tracked_items;
         $currency = Currency::where('country_name', $user->country)->first();
         $current_savings_str = $currency->symbol.(float)$total_saved_value;
@@ -146,6 +161,7 @@ class TrackedProduct extends Model
                                 'user_id' => $user_id,
                                 'badge_id' => $existing_savings_badge->id,
                                 'message' => 'Achievement Unlocked',
+                                'description' => 'You have unlocked'.' '.$existing_savings_badge->name.' '.'badge',
                                 'type' => 'achievement_unlocked'
                             ]);
                             if($user->fcm_token) {
@@ -164,6 +180,7 @@ class TrackedProduct extends Model
                     BadgeUser::create([
                         'user_id' => $user_id,
                         'badge_id' => $equivalent_savings_badge->id,
+                        'country' => $user->country
                     ]);
                     Point::create([
                         'points' => $equivalent_savings_badge->points_equivalent,
@@ -176,7 +193,11 @@ class TrackedProduct extends Model
             ->where('requirement_value', '>', (int)$total_saved_value)
             ->orderBy('requirement_value', 'asc')
             ->first();
-        $next_saving_badge->requirement_value = $currency->symbol.$next_saving_badge->requirement_value;
+        if($next_saving_badge) {
+            $next_saving_badge->requirement_value = $currency->symbol.$next_saving_badge->requirement_value;
+        } else {
+            $next_saving_badge = null;
+        }
         $current_savings = array(
             'current_savings' => "{$current_savings_str}",
             'savings_start_date' => $savings_start_date,

@@ -15,8 +15,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PersonaSeeder::class,
-            UserSeeder::class,
-            LoginStreakBadgeSeeder::class
+            BadgeSeeder::class,
+            CurrencySeeder::class
         ]);
     }
 }
