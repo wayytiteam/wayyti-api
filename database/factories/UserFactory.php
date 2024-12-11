@@ -31,7 +31,6 @@ class UserFactory extends Factory
             '50 to 64 years',
             '65 years and above'
         ]);
-        $persona = Persona::inRandomOrder()->first()->id;
         return [
             'username' => fake()->userName(),
             'email' => fake()->unique()->safeEmail(),
@@ -40,7 +39,6 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'country' => fake()->country(),
             'age_group' => $age_group,
-            'persona_id' => $persona
         ];
     }
 
