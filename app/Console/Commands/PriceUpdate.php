@@ -89,7 +89,8 @@ class PriceUpdate extends Command
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);
                                 }
-                            } elseif($matching_item['price'] > $product->latest_price) {
+                            }
+                            if($matching_item['price'] > $product->latest_price) {
                                 $product->original_price = $product->latest_price;
                                 $product->latest_price = $item['price'];
                                 $product->save();
