@@ -50,10 +50,10 @@ class Notification extends Model
 
     public static function send_notification($title, $message, $fcm_token) {
         $project_id = config('services.fcm.project_id');
-        // $bucket_file = 'smartsale-private-key.json';
+        $bucket_file = 'smartsale-private-key.json';
         $local_file_path = storage_path('smartsale-private-key.json');
-        // $file_content = Storage::disk('s3')->get($bucket_file);
-        // file_put_contents($local_file_path, $file_content);
+        $file_content = Storage::disk('s3')->get($bucket_file);
+        file_put_contents($local_file_path, $file_content);
         $client = new GoogleClient();
         $client->setAuthConfig($local_file_path);
         $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
