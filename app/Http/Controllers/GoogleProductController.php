@@ -18,118 +18,21 @@ class GoogleProductController extends Controller
      */
     public function index(Request $request)
     {
-        {
-            $oxylabs_username = env('OXYLABS_USERNAME');
-            $oxylabs_password = env('OXYLABS_PASSWORD');
-            $url = "https://realtime.oxylabs.io/v1/queries";
-            $products = GoogleProduct::whereHas('tracked_products')->with('users', 'tracked_products')->get();
-            $product = GoogleProduct::where('product_id', '10401983498918762651')->first();
-            // return $product;
-            $params = array(
-                'source' => 'google_shopping_product',
-                'geo_location' => "Philippines",
-                'domain' => 'com',
-                // 'query' => $product->product_id,
-                'query' => '10401983498918762651',
-                'parse' => true,
-            );
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_USERPWD, $oxylabs_username . ":" . $oxylabs_password);
+        $user = User::find(Auth::id());
+        $keyword = $request->keyword;
+        $google_products = GoogleProduct::where(function (Builder $query) use ($keyword) {
+            $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
+        })
+        ->where('country', $user->country)
+        ->paginate(10);
 
-            $headers = array();
-            $headers[] = "Content-Type: application/json";
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-            $result = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                echo 'Error:' . curl_error($ch);
-            }
-
-            curl_close($ch);
-            $response_data = json_decode($result, true);
-
-            if(isset($response_data['results'][0]['content']['pricing'])) {
-                $title = $response_data['results'][0]['content']['title'];
-                $matching_item = null;
-                if(count($response_data['results'][0]['content']['pricing']['online']) > 0) {
-                    $items = $response_data['results'][0]['content']['pricing']['online'];
-                    foreach($items as $item) {
-                        if($item['seller'] === $product->merchant) {
-                            $matching_item = $item;
-                        }
-                    }
-                    return $matching_item;
-                }
-            }
-            // foreach($products as $product)
-            // {
-            //     $tracked_product = TrackedProduct::where('google_product_id', $product->id)->first();
-            //     $users = $product['users'];
-            //     foreach($users as $user)
-            //     {
-            //         $params = array(
-            //             'source' => 'google_shopping_product',
-            //             'geo_location' => $user["country"],
-            //             'domain' => 'com',
-            //             // 'query' => $product->product_id,
-            //             'query' => '10401983498918762651',
-            //             'parse' => true,
-            //         );
-            //         $ch = curl_init();
-            //         curl_setopt($ch, CURLOPT_URL, $url);
-            //         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            //         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-            //         curl_setopt($ch, CURLOPT_POST, 1);
-            //         curl_setopt($ch, CURLOPT_USERPWD, $oxylabs_username . ":" . $oxylabs_password);
-
-            //         $headers = array();
-            //         $headers[] = "Content-Type: application/json";
-            //         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-            //         $result = curl_exec($ch);
-
-            //         if (curl_errno($ch)) {
-            //             echo 'Error:' . curl_error($ch);
-            //         }
-
-            //         curl_close($ch);
-            //         $response_data = json_decode($result, true);
-
-            //         if(isset($response_data['results'][0]['content']['pricing'])) {
-            //             $title = $response_data['results'][0]['content']['title'];
-            //             if(count($response_data['results'][0]['content']['pricing']['online']) > 0) {
-            //                 $items = $response_data['results'][0]['content']['pricing']['online'];
-            //                 foreach($items as $item) {
-            //                     if($item['seller'] === $product->merchant) {
-            //                         $matching_item = $item;
-            //                     }
-            //                 }
-            //                 return $matching_item;
-            //             }
-            //         }
-            //     }
-            // }
+        if(!$user->country) {
+            return response()->json([
+                'message' => 'Country has not been set'
+            ], 400);
         }
-        // $user = User::find(Auth::id());
-        // $keyword = $request->keyword;
-        // $google_products = GoogleProduct::where(function (Builder $query) use ($keyword) {
-        //     $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
-        // })
-        // ->where('country', $user->country)
-        // ->paginate(10);
 
-        // if(!$user->country) {
-        //     return response()->json([
-        //         'message' => 'Country has not been set'
-        //     ], 400);
-        // }
-
-        // return response()->json($google_products, 200);
+        return response()->json($google_products, 200);
 
     }
 
