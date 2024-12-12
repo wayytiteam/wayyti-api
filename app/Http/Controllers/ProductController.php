@@ -123,7 +123,7 @@ class ProductController extends Controller
 
         $params = array(
             'source' => 'google_shopping_search',
-            'domain' => 'com.ph',
+            'domain' => 'com',
             'query' => $request->query('keyword'),
             'geo_location' => $request->query('geo_location'),
             'pages' => 2,

@@ -88,11 +88,11 @@ class TrackedProduct extends Model
                     'badge_id' => $item_tracker_badge->id,
                     'country' => $user->country
                 ]);
-                Point::create([
-                    'points' => $item_tracker_badge->points_equivalent,
-                    'user_id' => $user_id,
-                    'country' => $user->country
-                ]);
+                // Point::create([
+                //     'points' => $item_tracker_badge->points_equivalent,
+                //     'user_id' => $user_id,
+                //     'country' => $user->country
+                // ]);
                 $new_notification = Notification::create([
                     'user_id' => $user_id,
                     'badge_id' => $item_tracker_badge->id,
@@ -182,11 +182,11 @@ class TrackedProduct extends Model
                         'badge_id' => $equivalent_savings_badge->id,
                         'country' => $user->country
                     ]);
-                    Point::create([
-                        'points' => $equivalent_savings_badge->points_equivalent,
-                        'user_id' => $user_id,
-                        'country' => $user->country
-                    ]);
+                    // Point::create([
+                    //     'points' => $equivalent_savings_badge->points_equivalent,
+                    //     'user_id' => $user_id,
+                    //     'country' => $user->country
+                    // ]);
                 }
             }
         $next_saving_badge = Badge::where('type', 'savings')

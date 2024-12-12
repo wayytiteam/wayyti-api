@@ -77,9 +77,10 @@ class TrackedProductController extends Controller
         $user = User::find(Auth::id());
         try {
             if($user) {
-                if($products) {
+                if($products)
+                {
                     $registered_products = [];
-                foreach($products as $product)
+                    foreach($products as $product)
                     {
                         $product_data = GoogleProduct::updateOrCreate([
                             "product_id" => $product["product_id"],
@@ -130,6 +131,11 @@ class TrackedProductController extends Controller
                                     'points' => 5
                                 ]);
                             }
+                            Point::create([
+                                'user_id' => $user->id,
+                                'tracked_product_id' => $tracked_product->id,
+                                'points' => 5
+                            ]);
                             $tracked_product->load('folder', 'google_product');
                             $tracked_products[] = $tracked_product;
                         }
