@@ -33,6 +33,7 @@ class GoogleProductController extends Controller
         }
 
         return response()->json($google_products, 200);
+
     }
 
     /**

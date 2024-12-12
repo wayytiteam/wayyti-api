@@ -36,10 +36,8 @@ class PersonaSeeder extends Seeder
             ],
         ];
         $persona_list = Persona::get();
-        if(empty($persona_list)) {
-            foreach ($personas as $persona) {
-                Persona::create($persona);
-            }
+        foreach ($personas as $persona) {
+            Persona::create($persona);
         }
     }
 }

@@ -68,7 +68,7 @@ class TrackedProduct extends Model
                             'user_id' => $user_id,
                             'badge_id' => $item_tracker_badge->id,
                             'message' => 'Achievement Unlocked',
-                            'description' => 'You have unlocked'.' '.$item_tracker_badge->name.' '.'badge',
+                            'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
                             'type' => 'achievement_unlocked'
                         ]);
                         if($user->fcm_token) {
@@ -97,7 +97,7 @@ class TrackedProduct extends Model
                     'user_id' => $user_id,
                     'badge_id' => $item_tracker_badge->id,
                     'message' => 'Achievement Unlocked',
-                    'description' => 'You have unlocked'.' '.$item_tracker_badge->name.' '.'badge',
+                    'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
                     'type' => 'achievement_unlocked'
                 ]);
                 if($user->fcm_token) {
@@ -161,7 +161,7 @@ class TrackedProduct extends Model
                                 'user_id' => $user_id,
                                 'badge_id' => $existing_savings_badge->id,
                                 'message' => 'Achievement Unlocked',
-                                'description' => 'You have unlocked'.' '.$existing_savings_badge->name.' '.'badge',
+                                'description' => 'You have unlocked the'.' '.$existing_savings_badge->name.' '.'Badge',
                                 'type' => 'achievement_unlocked'
                             ]);
                             if($user->fcm_token) {

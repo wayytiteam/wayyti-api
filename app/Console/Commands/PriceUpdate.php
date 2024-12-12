@@ -68,6 +68,7 @@ class PriceUpdate extends Command
 
                 if(isset($response_data['results'][0]['content']['pricing'])) {
                     $title = $response_data['results'][0]['content']['title'];
+                    $matching_item = null;
                     if(count($response_data['results'][0]['content']['pricing']['online']) > 0) {
                         $items = $response_data['results'][0]['content']['pricing']['online'];
                         foreach($items as $item) {
