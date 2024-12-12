@@ -66,7 +66,7 @@ class NotificationController extends Controller
             'tracked_product_id' => $request->tracked_product_id,
             'badge_id' => $request->badge_id,
             'message' => $message,
-            'description' => 'You have unlocked'.' '.$request->tracked_product_id->name.' '.'badge',
+            'description' => 'You have unlocked the'.' '.$request->tracked_product_id->name.' '.'Badge',
             'type' => $type
         ]);
 

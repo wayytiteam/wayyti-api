@@ -102,7 +102,7 @@ class AttendanceController extends Controller
                     $new_notification = Notification::create([
                         'user_id' => $user->id,
                         'message' => 'Achievement Unlocked',
-                        'description' => 'You have unlocked'.' '.$login_badge_acquired->name.' '.'badge',
+                        'description' => 'You have unlocked the'.' '.$login_badge_acquired->name.' '.'Badge',
                         'badge_id' => $login_badge_acquired->id,
                         'type' => 'achievement_unlocked'
                     ]);
@@ -124,7 +124,7 @@ class AttendanceController extends Controller
             $new_notification = Notification::create([
                 'user_id' => $user->id,
                 'message' => 'Achievement Unlocked',
-                'description' => 'You have unlocked'.' '.$login_badge_acquired->name.' '.'badge',
+                'description' => 'YYou have unlocked the'.' '.$login_badge_acquired->name.' '.'Badge',
                 'badge_id' => $login_badge_acquired->id,
                 'type' => 'achievement_unlocked'
             ]);

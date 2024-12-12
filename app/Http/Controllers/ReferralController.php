@@ -61,7 +61,7 @@ class ReferralController extends Controller
                                 'user_id' => $user->id,
                                 'badge_id' => $badge_equivalent->id,
                                 'message' => 'Achievement Unlocked',
-                                'description' => 'You have unlocked'.' '.$badge_equivalent->name.' '.'badge',
+                                'description' => 'You have unlocked the'.' '.$badge_equivalent->name.' '.'Badge',
                                 'type' => 'achievement_unlocked'
                             ]);
                             if($user->fcm_token) {
@@ -81,7 +81,7 @@ class ReferralController extends Controller
                             'user_id' => $user->id,
                             'badge_id' => $badge_equivalent->id,
                             'message' => 'Achievement Unlocked',
-                            'description' => 'You have unlocked'.' '.$badge_equivalent->name.' '.'badge',
+                            'description' => 'You have unlocked the'.' '.$badge_equivalent->name.' '.'Badge',
                             'type' => 'achievement_unlocked'
                         ]);
                         if($user->fcm_token) {

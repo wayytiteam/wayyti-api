@@ -274,7 +274,7 @@ class TrackedProductController extends Controller
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => 'Achievement_unlocked',
-                                    'description' => 'You have unlocked'.' '.$point_equivalent_badge->name.' '.'badge',
+                                    'description' => 'You have unlocked the'.' '.$point_equivalent_badge->name.' '.'Badge',
                                     'type' => 'achievement_unlocked',
                                     'badge_id' => $get_current_badge->badge_id
                                 ]);
@@ -294,7 +294,7 @@ class TrackedProductController extends Controller
                         $new_notification = Notification::create([
                             'user_id' => $user->id,
                             'message' => 'Achievement_unlocked',
-                            'description' => 'You have unlocked'.' '.$point_equivalent_badge->name.' '.'badge',
+                            'description' => 'You have unlocked the'.' '.$point_equivalent_badge->name.' '.'Badge',
                             'type' => 'achievement_unlocked',
                             'badge_id' => $point_equivalent_badge->id
                         ]);
