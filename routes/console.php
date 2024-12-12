@@ -11,5 +11,5 @@ use App\Console\Commands\MailIncompleteProfiles;
 // })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command(MailIncompleteProfiles::class)
-    ->daily();
+    ->everyMinute();
 Schedule::command(PriceUpdate::class)->hourly();
