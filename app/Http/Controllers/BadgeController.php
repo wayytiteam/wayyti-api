@@ -20,7 +20,7 @@ class BadgeController extends Controller
         $currency = Currency::where('country_name', $user->country)->first();
         $badges = Badge::where('type', $request->badge_type)
             ->orderBy('requirement_value', 'asc')
-            ->paginate(10);
+            ->paginate(20);
 
         if ($request->badge_type === 'savings') {
             $badges->getCollection()->transform(function ($badge) use ($currency) {

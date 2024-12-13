@@ -206,12 +206,16 @@ class TrackedProductController extends Controller
         try {
             $google_product = GoogleProduct::where('product_id', $request->product_id)
                 ->where('merchant', $request->merchant)
+                ->whereHas('tracked_products', function (Builder $query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
                 ->with('tracked_products')
                 ->first();
             $tracked_product = TrackedProduct::where('user_id', $user->id)
                 ->where('google_product_id', $google_product->id)
                 ->with('google_product')
                 ->first();
+            return $tracked_product;
             if($google_product) {
                 if($tracked_product) {
                     return response()->json($tracked_product, 200);
@@ -309,18 +313,11 @@ class TrackedProductController extends Controller
                         }
                     }
                 }
-                if($point_equivalent_badge) {
-                    Point::updateOrCreate([
-                        'user_id' => $user->id,
-                        'google_product_id' => $tracked_product->google_product_id,
-                        'country' => $user->country
-                    ], [
-                        'user_id' => $user->id,
-                        'google_product_id' => $tracked_product->google_product_id,
-                        'points' => $saved_value,
-                        'country' => $user->country
-                    ]);
-                }
+                Point::create([
+                    'user_id' => $user->id,
+                    'google_product_id' => $tracked_product->google_product_id,
+                    'country' => $user->country
+                ]);
             }
             $tracked_product->save();
             $tracked_product->load('google_product');
