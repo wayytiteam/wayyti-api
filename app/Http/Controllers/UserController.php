@@ -226,7 +226,8 @@ class UserController extends Controller
                     } else {
                         $user = User::create([
                             'facebook_id' => $facebook_id,
-                            'email' => $email
+                            'email' => $email,
+                            'email_verified_at' => Carbon::parse(now())
                         ]);
                         $token = $user->createToken('Facebook Authentication')->accessToken;
                         return response()->json([
@@ -238,7 +239,8 @@ class UserController extends Controller
                     $generated_email = Str::random(10).'@'.'example.com';
                     $user = User::create([
                         'facebook_id' => $facebook_id,
-                        'email' => $generated_email
+                        'email' => $generated_email,
+                        'email_verified_at' => Carbon::parse(now())
                     ]);
                     $token = $user->createToken('Facebook Authentication')->accessToken;
                     return response()->json([
@@ -348,7 +350,8 @@ class UserController extends Controller
                     } else {
                         $user = User::create([
                             'ios_id' => $ios_id,
-                            'email' => $email
+                            'email' => $email,
+                            'email_verified_at' => Carbon::parse(now())
                         ]);
                         $token = $user->createToken('Facebook Authentication')->accessToken;
                         return response()->json([
@@ -360,7 +363,8 @@ class UserController extends Controller
                     $generated_email = Str::random(10).'@'.'example.com';
                     $user = User::create([
                         'ios_id' => $ios_id,
-                        'email' => $generated_email
+                        'email' => $generated_email,
+                        'email_verified_at' => Carbon::parse(now())
                     ]);
                     $token = $user->createToken('Facebook Authentication')->accessToken;
                     return response()->json([

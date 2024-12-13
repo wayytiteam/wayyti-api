@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Notification;
 
 class ShareController extends Controller
 {
@@ -62,14 +63,38 @@ class ShareController extends Controller
                     ->first();
                 if($current_badge) {
                     if($current_badge->badge_id != $badge_equivalent->id) {
+                        if($current_badge->badge->requirement_value < $badge_equivalent->requirement_value) {
+                            $new_notification = Notification::create([
+                                'user_id' => $user->id,
+                                'badge_id' => $badge_equivalent->id,
+                                'message' => 'Achievement Unlocked',
+                                'description' => 'You have unlocked the'.' '.$badge_equivalent->name.' '.'Badge',
+                                'type' => 'achievement_unlocked'
+                            ]);
+                            if($user->fcm_token) {
+                                Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                            }
+                        }
                         $current_badge->badge_id = $badge_equivalent->id;
                         $current_badge->save();
                     }
                 } else {
-                    BadgeUser::create([
-                        'user_id' => $user->id,
-                        'badge_id' => $badge_equivalent->id
-                    ]);
+                    if($badge_equivalent) {
+                        BadgeUser::create([
+                            'user_id' => $user->id,
+                            'badge_id' => $badge_equivalent->id
+                        ]);
+                        $new_notification = Notification::create([
+                            'user_id' => $user->id,
+                            'badge_id' => $badge_equivalent->id,
+                            'message' => 'Achievement Unlocked',
+                            'description' => 'You have unlocked the'.' '.$badge_equivalent->name.' '.'Badge',
+                            'type' => 'achievement_unlocked'
+                        ]);
+                        if($user->fcm_token) {
+                            Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                        }
+                    }
                 }
                 return response()->json([
                     'message' => 'Thank you for sharing this product'
