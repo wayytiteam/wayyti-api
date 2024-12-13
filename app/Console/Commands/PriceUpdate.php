@@ -79,7 +79,7 @@ class PriceUpdate extends Command
                         if($matching_item) {
                             if($matching_item['price'] < $product->latest_price) {
                                 $product->original_price = $product->latest_price;
-                                $product->latest_price = $item['price'];
+                                $product->latest_price = $matching_item['price'];
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
@@ -93,7 +93,7 @@ class PriceUpdate extends Command
                             }
                             if($matching_item['price'] > $product->latest_price) {
                                 $product->original_price = $product->latest_price;
-                                $product->latest_price = $item['price'];
+                                $product->latest_price = $matching_item['price'];
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
