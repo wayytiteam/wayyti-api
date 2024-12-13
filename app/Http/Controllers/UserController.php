@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Http;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -211,19 +212,60 @@ class UserController extends Controller
     {
        $facebook_id = $request->uid;
        $email = $request->email;
-       $user = User::where('facebook_id', $facebook_id)->first();
-       if(!$user) {
-        $user = User::create([
-            'facebook_id' => $facebook_id,
-            'email' => $email
-        ]);
+       try {
+        $user = User::where('facebook_id', $facebook_id)->first();
+        if($user){
+            $token = $user->createToken('Facebook Authentication')->accessToken;
+            if(!$email) {
+                return response()->json([
+                    'token' => $token,
+                    'user' => $user
+                ]);
+            } else {
+                $check_email = User::where('email', $user->email)->first();
+                if($check_email) {
+                    Throw new Exception('Email is already used');
+                } else {
+                    return response()->json([
+                        'token' => $token,
+                        'user' => $user
+                    ]);
+                }
+            }
+        } else {
+            if($email) {
+                $check_email = User::where('email', $email)->first();
+                if($check_email) {
+                    Throw new Exception('Email is already used');
+                } else {
+                    $user = User::create([
+                        'facebook_id' => $facebook_id,
+                        'email' => $email
+                    ]);
+                    $token = $user->createToken('Facebook Authentication')->accessToken;
+                    return response()->json([
+                        'token' => $token,
+                        'user' => $user
+                    ]);
+                }
+            } else {
+                $generated_email = Str::random(10).'@'.'example.com';
+                $user = User::create([
+                    'facebook_id' => $facebook_id,
+                    'email' => $generated_email
+                ]);
+                $token = $user->createToken('Facebook Authentication')->accessToken;
+                return response()->json([
+                    'token' => $token,
+                    'user' => $user
+                ]);
+            }
+        }
+       } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 400);
        }
-       $token = $user->createToken('Facebook Authentication')->accessToken;
-
-       return response()->json([
-        'token' => $token,
-        'user' => $user
-       ], 200);
     }
 
     public function google_mobile_sign_in(Request $request)
@@ -302,21 +344,62 @@ class UserController extends Controller
     // }
     public function apple_sign_in(Request $request)
     {
-       $ios_id = $request->uid;
-       $email = $request->email;
-       $user = User::where('ios_id', $ios_id)->first();
-       if(!$user) {
-        $user = User::create([
-            'ios_id' => $ios_id,
-            'email' => $email
-        ]);
-       }
-       $token = $user->createToken('IOS Authentication')->accessToken;
-
-       return response()->json([
-        'token' => $token,
-        'user' => $user
-       ], 200);
+        $ios_id = $request->uid;
+        $email = $request->email;
+        try {
+         $user = User::where('ios_id', $ios_id)->first();
+         if($user){
+             $token = $user->createToken('Facebook Authentication')->accessToken;
+             if(!$email) {
+                 return response()->json([
+                     'token' => $token,
+                     'user' => $user
+                 ]);
+             } else {
+                 $check_email = User::where('email', $user->email)->first();
+                 if($check_email) {
+                     Throw new Exception('Email is already used');
+                 } else {
+                     return response()->json([
+                         'token' => $token,
+                         'user' => $user
+                     ]);
+                 }
+             }
+         } else {
+             if($email) {
+                 $check_email = User::where('email', $email)->first();
+                 if($check_email) {
+                     Throw new Exception('Email is already used');
+                 } else {
+                     $user = User::create([
+                         'ios_id' => $ios_id,
+                         'email' => $email
+                     ]);
+                     $token = $user->createToken('Facebook Authentication')->accessToken;
+                     return response()->json([
+                         'token' => $token,
+                         'user' => $user
+                     ]);
+                 }
+             } else {
+                 $generated_email = Str::random(10).'@'.'example.com';
+                 $user = User::create([
+                     'ios_id' => $ios_id,
+                     'email' => $generated_email
+                 ]);
+                 $token = $user->createToken('Facebook Authentication')->accessToken;
+                 return response()->json([
+                     'token' => $token,
+                     'user' => $user
+                 ]);
+             }
+         }
+        } catch (\Exception $e) {
+         return response()->json([
+             'error' => $e->getMessage()
+         ], 400);
+        }
     }
 
     // public function apple_sign_in(Request $request)
