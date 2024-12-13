@@ -316,6 +316,7 @@ class TrackedProductController extends Controller
                 Point::create([
                     'user_id' => $user->id,
                     'google_product_id' => $tracked_product->google_product_id,
+                    'points' => $saved_value,
                     'country' => $user->country
                 ]);
             }
