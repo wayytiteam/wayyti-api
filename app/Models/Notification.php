@@ -24,6 +24,8 @@ class Notification extends Model
         'type'
     ];
 
+    protected $appends = ['created_at_human'];
+
     protected $casts = [
         'read' => 'boolean'
     ];
@@ -94,5 +96,10 @@ class Notification extends Model
             return $err;
         }
         curl_close($ch);
+    }
+
+    public function getCreatedAtHumanAttribute()
+    {
+        return $this->created_at->diffForHumans();
     }
 }
