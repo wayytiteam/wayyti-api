@@ -115,15 +115,6 @@ class TrackedProductController extends Controller
                             $folders[] = $empty_folder;
                         }
                         foreach($folders as $folder) {
-                            $tracked_product = TrackedProduct::updateOrCreate([
-                                'google_product_id' => $product_data->id,
-                                'user_id' => $user->id,
-                                'folder_id' => $folder["id"],
-                            ], [
-                                'google_product_id' => $product_data->id,
-                                'user_id' => $user->id,
-                                'folder_id' => $folder["id"],
-                            ]);
                             $tracked_product = TrackedProduct::where('user_id', $user->id)
                                 ->where('google_product_id', $product_data->id)
                                 ->where('folder_id', $folder["id"])
@@ -134,12 +125,12 @@ class TrackedProductController extends Controller
                                     'user_id' => $user->id,
                                     'folder_id' => $folder["id"],
                                 ]);
+                                Point::create([
+                                    'user_id' => $user->id,
+                                    'tracked_product_id' => $tracked_product->id,
+                                    'points' => 5
+                                ]);
                             }
-                            Point::create([
-                                'user_id' => $user->id,
-                                'tracked_product_id' => $tracked_product->id,
-                                'points' => 5
-                            ]);
                             $tracked_product->load('folder', 'google_product');
                             $tracked_products[] = $tracked_product;
                         }
