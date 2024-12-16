@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\GoogleProduct;
 use App\Models\Share;
 use App\Models\User;
 use App\Models\Point;
-use App\Models\Badge;
-use App\Models\BadgeUser;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +17,7 @@ class ShareController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $share_deal = Share::get_share_badge($user->id);
+        $share_deal = Share::get_share_badge($user);
         return response()->json($share_deal, 200);
     }
 
@@ -47,30 +43,9 @@ class ShareController extends Controller
                 ]);
                 Point::create([
                     'user_id' => $user->id,
-                    'share_id' => $share->id
+                    'share_id' => $share->id,
+                    'points' => '15'
                 ]);
-                $count_shares = Share::where('user_id', $user->id)
-                    ->count();
-                $badge_equivalent = Badge::where('type', 'share')
-                    ->orderBy('requirement_value', 'desc')
-                    ->where('requirement_value', '<=', $count_shares)
-                    ->first();
-                $current_badge = BadgeUser::where('user_id', $user->id)
-                    ->whereHas('badge', function (Builder $query) {
-                        $query->where('type', 'share');
-                    })
-                    ->first();
-                if($current_badge) {
-                    if($current_badge->badge_id != $badge_equivalent->id) {
-                        $current_badge->badge_id = $badge_equivalent->id;
-                        $current_badge->save();
-                    }
-                } else {
-                    BadgeUser::create([
-                        'user_id' => $user->id,
-                        'badge_id' => $badge_equivalent->id
-                    ]);
-                }
                 return response()->json([
                     'message' => 'Thank you for sharing this product'
                 ], 200);

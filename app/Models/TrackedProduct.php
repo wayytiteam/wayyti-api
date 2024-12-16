@@ -69,10 +69,11 @@ class TrackedProduct extends Model
                             'badge_id' => $item_tracker_badge->id,
                             'message' => 'Achievement Unlocked',
                             'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
-                            'type' => 'achievement_unlocked'
+                            'type' => 'achievement_unlocked',
+                            'country' => $user->country
                         ]);
                         if($user->fcm_token) {
-                            Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                            Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                         }
                     }
                     $existing_tracker_badge->badge_id = $item_tracker_badge->id;
@@ -88,20 +89,16 @@ class TrackedProduct extends Model
                     'badge_id' => $item_tracker_badge->id,
                     'country' => $user->country
                 ]);
-                // Point::create([
-                //     'points' => $item_tracker_badge->points_equivalent,
-                //     'user_id' => $user_id,
-                //     'country' => $user->country
-                // ]);
                 $new_notification = Notification::create([
                     'user_id' => $user_id,
                     'badge_id' => $item_tracker_badge->id,
                     'message' => 'Achievement Unlocked',
                     'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
-                    'type' => 'achievement_unlocked'
+                    'type' => 'achievement_unlocked',
+                    'country' => $user->country
                 ]);
                 if($user->fcm_token) {
-                    Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                    Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                 }
             }
         }
@@ -162,10 +159,11 @@ class TrackedProduct extends Model
                                 'badge_id' => $existing_savings_badge->id,
                                 'message' => 'Achievement Unlocked',
                                 'description' => 'You have unlocked the'.' '.$existing_savings_badge->name.' '.'Badge',
-                                'type' => 'achievement_unlocked'
+                                'type' => 'achievement_unlocked',
+                                'country' => $user->country
                             ]);
                             if($user->fcm_token) {
-                                Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                                Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                             }
                         }
                         $existing_savings_badge->badge_id = $equivalent_savings_badge->id;
@@ -182,11 +180,17 @@ class TrackedProduct extends Model
                         'badge_id' => $equivalent_savings_badge->id,
                         'country' => $user->country
                     ]);
-                    // Point::create([
-                    //     'points' => $equivalent_savings_badge->points_equivalent,
-                    //     'user_id' => $user_id,
-                    //     'country' => $user->country
-                    // ]);
+                    $new_notification = Notification::create([
+                        'user_id' => $user_id,
+                        'badge_id' => $equivalent_savings_badge->id,
+                        'message' => 'Achievement Unlocked',
+                        'description' => 'You have unlocked the'.' '.$equivalent_savings_badge->name.' '.'Badge',
+                        'type' => 'achievement_unlocked',
+                        'country' => $user->country
+                    ]);
+                    if($user->fcm_token) {
+                        Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
+                    }
                 }
             }
         $next_saving_badge = Badge::where('type', 'savings')

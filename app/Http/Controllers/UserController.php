@@ -16,8 +16,7 @@ use Exception;
 use App\Mail\OTPSent;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Http;
-use Firebase\JWT\JWT;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -179,32 +178,81 @@ class UserController extends Controller
         }
     }
 
+    // public function facebook_mobile_sign_in(Request $request)
+    // {
+    //     $token = '';
+    //     $facebook_credential = Socialite::driver('facebook')
+    //         ->fields(['name', 'email', 'id'])
+    //         ->userFromToken($request->access_token);
+
+    //     $user = User::where('facebook_id', $facebook_credential->id)->first();
+    //     if (!$user) {
+    //         try {
+    //             $user = User::create([
+    //                 'facebook_id' => $facebook_credential->id,
+    //                 'email' => $facebook_credential->email,
+    //                 'email_verified_at' => Carbon::parse(now())
+    //             ]);
+    //             $token = $user->createToken('Facebook Authentication')->accessToken;
+    //             return response()->json([
+    //                 'token' => $token,
+    //                 'user' => $user
+    //             ], 200);
+    //         } catch (\Exception $e) {
+    //             return response()->json([
+    //                 'message' => 'Something went wrong',
+    //                 'error' => $e->getMessage()
+    //             ], 400);
+    //         }
+    //     }
+    // }
     public function facebook_mobile_sign_in(Request $request)
     {
-        $token = '';
-        $facebook_credential = Socialite::driver('facebook')
-            ->fields(['name', 'email', 'id'])
-            ->userFromToken($request->access_token);
-
-        $user = User::where('facebook_id', $facebook_credential->id)->first();
-        if (!$user) {
-            try {
-                $user = User::create([
-                    'facebook_id' => $facebook_credential->id,
-                    'email' => $facebook_credential->email,
-                    'email_verified_at' => Carbon::parse(now())
-                ]);
-                $token = $user->createToken('Facebook Authentication')->accessToken;
-                return response()->json([
-                    'token' => $token,
-                    'user' => $user
-                ], 200);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'message' => 'Something went wrong',
-                    'error' => $e->getMessage()
-                ], 400);
+        $facebook_id = $request->uid;
+        $email = $request->email;
+        try {
+         $user = User::where('facebook_id', $facebook_id)->first();
+         if($user){
+            $token = $user->createToken('Facebook Authentication')->accessToken;
+            return response()->json([
+                'token' => $token,
+                'user' => $user
+            ]);
+            } else {
+                if($email) {
+                    $check_email = User::where('email', $email)->first();
+                    if($check_email) {
+                        Throw new Exception('Email is already used');
+                    } else {
+                        $user = User::create([
+                            'facebook_id' => $facebook_id,
+                            'email' => $email,
+                            'email_verified_at' => Carbon::parse(now())
+                        ]);
+                        $token = $user->createToken('Facebook Authentication')->accessToken;
+                        return response()->json([
+                            'token' => $token,
+                            'user' => $user
+                        ]);
+                    }
+                } else {
+                    $generated_email = Str::random(10).'@'.'example.com';
+                    $user = User::create([
+                        'facebook_id' => $facebook_id,
+                        'email' => $generated_email,
+                        'email_verified_at' => Carbon::parse(now())
+                    ]);
+                    $token = $user->createToken('Facebook Authentication')->accessToken;
+                    return response()->json([
+                        'token' => $token,
+                        'user' => $user
+                    ]);
+                }
             }
+        } catch (\Exception $e) {
+         return response()->json([
+             'error' => $e->getMessage()
+         ], 400);
         }
     }
 
@@ -235,51 +283,100 @@ class UserController extends Controller
         }
     }
 
+    // public function apple_sign_in(Request $request)
+    // {
+    //     $authorizationCode = $request->input('authorization_code');
+
+    //     $clientSecret = JWT::encode([
+    //         'iss' => config('services.apple.team_id'),
+    //         'iat' => time(),
+    //         'exp' => time() + (86400 * 180), // Valid for 6 months
+    //         'aud' => 'https://appleid.apple.com',
+    //         'sub' => config('services.apple.client_id'),
+    //     ], file_get_contents(config('services.apple.private_key')), 'ES256', config('services.apple.key_id'));
+
+    //     try {
+    //         $response = Http::post('https://appleid.apple.com/auth/token', [
+    //             'client_id' => config('services.apple.client_id'),
+    //             'client_secret' => $clientSecret,
+    //             'code' => $authorizationCode,
+    //             'grant_type' => 'authorization_code',
+    //         ]);
+
+    //         $responseBody = json_decode($response->getBody(), true);
+
+    //         $idToken = $responseBody['id_token'];
+    //         $decodedToken = json_decode(base64_decode($idToken));
+
+    //         $appleUserId = $decodedToken->sub;
+    //         $email = $decodedToken->email ?? null;
+
+    //         $user = User::where('ios_id', $appleUserId)->first();
+    //         if (!$user) {
+    //             $user = User::create([
+    //                 'ios_id' => $appleUserId,
+    //                 'email' => $email,
+    //                 'email_verified_at' => Carbon::parse(now())
+    //             ]);
+    //         }
+
+    //         $token = $user->createToken('Apple Authentication')->accessToken;
+    //         return response()->json([
+    //             'token' => $token,
+    //             'user' => $user
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Authentication failed'], 401);
+    //     }
+    // }
     public function apple_sign_in(Request $request)
     {
-        $authorizationCode = $request->input('authorization_code');
-
-        $clientSecret = JWT::encode([
-            'iss' => config('services.apple.team_id'),
-            'iat' => time(),
-            'exp' => time() + (86400 * 180), // Valid for 6 months
-            'aud' => 'https://appleid.apple.com',
-            'sub' => config('services.apple.client_id'),
-        ], file_get_contents(config('services.apple.private_key')), 'ES256', config('services.apple.key_id'));
-
+        $ios_id = $request->uid;
+        $email = $request->email;
         try {
-            $response = Http::post('https://appleid.apple.com/auth/token', [
-                'client_id' => config('services.apple.client_id'),
-                'client_secret' => $clientSecret,
-                'code' => $authorizationCode,
-                'grant_type' => 'authorization_code',
-            ]);
-
-            $responseBody = json_decode($response->getBody(), true);
-
-            $idToken = $responseBody['id_token'];
-            $decodedToken = json_decode(base64_decode($idToken));
-
-            $appleUserId = $decodedToken->sub;
-            $email = $decodedToken->email ?? null;
-
-            $user = User::where('ios_id', $appleUserId)->first();
-            if (!$user) {
-                $user = User::create([
-                    'ios_id' => $appleUserId,
-                    'email' => $email,
-                    'email_verified_at' => Carbon::parse(now())
-                ]);
-            }
-
-            $token = $user->createToken('Apple Authentication')->accessToken;
+         $user = User::where('ios_id', $ios_id)->first();
+         if($user){
+            $token = $user->createToken('Facebook Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
                 'user' => $user
-            ], 200);
-
+            ]);
+            } else {
+                if($email) {
+                    $check_email = User::where('email', $email)->first();
+                    if($check_email) {
+                        Throw new Exception('Email is already used');
+                    } else {
+                        $user = User::create([
+                            'ios_id' => $ios_id,
+                            'email' => $email,
+                            'email_verified_at' => Carbon::parse(now())
+                        ]);
+                        $token = $user->createToken('Facebook Authentication')->accessToken;
+                        return response()->json([
+                            'token' => $token,
+                            'user' => $user
+                        ]);
+                    }
+                } else {
+                    $generated_email = Str::random(10).'@'.'example.com';
+                    $user = User::create([
+                        'ios_id' => $ios_id,
+                        'email' => $generated_email,
+                        'email_verified_at' => Carbon::parse(now())
+                    ]);
+                    $token = $user->createToken('Facebook Authentication')->accessToken;
+                    return response()->json([
+                        'token' => $token,
+                        'user' => $user
+                    ]);
+                }
+            }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Authentication failed'], 401);
+         return response()->json([
+             'error' => $e->getMessage()
+         ], 400);
         }
     }
 

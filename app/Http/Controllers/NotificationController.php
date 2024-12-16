@@ -9,6 +9,7 @@ use App\Models\TrackedProduct;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class NotificationController extends Controller
 {
@@ -18,7 +19,11 @@ class NotificationController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $get_notifications =  Notification::where('user_id', $user->id)
+        $get_notifications = Notification::where('user_id', $user->id)
+            ->where(function (Builder $query) use ($user) {
+            $query->where('country', $user->country)
+                ->orWhereNull('country');
+            })
             ->with(['monthly_draw_winner', 'tracked_product.google_product', 'badge',])
             ->orderBy('created_at', 'desc');
         $notification_list = $get_notifications->paginate(10);

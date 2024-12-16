@@ -79,13 +79,14 @@ class PriceUpdate extends Command
                         if($matching_item) {
                             if($matching_item['price'] < $product->latest_price) {
                                 $product->original_price = $product->latest_price;
-                                $product->latest_price = $item['price'];
+                                $product->latest_price = $matching_item['price'];
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
-                                    'message' => $title.' '.'dropped in price',
+                                    'message' => $title.' '.'has dropped in price',
                                     'tracked_product_id' => $tracked_product->id,
-                                    'type' => 'price_down'
+                                    'type' => 'price_down',
+                                    'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);
@@ -93,13 +94,14 @@ class PriceUpdate extends Command
                             }
                             if($matching_item['price'] > $product->latest_price) {
                                 $product->original_price = $product->latest_price;
-                                $product->latest_price = $item['price'];
+                                $product->latest_price = $matching_item['price'];
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has went up in price',
                                     'tracked_product_id' => $tracked_product->id,
-                                    'type' => 'price_up'
+                                    'type' => 'price_up',
+                                    'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);

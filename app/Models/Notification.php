@@ -21,8 +21,11 @@ class Notification extends Model
         'tracked_product_id',
         'badge_id',
         'read',
-        'type'
+        'type',
+        'country'
     ];
+
+    protected $appends = ['created_at_human'];
 
     protected $casts = [
         'read' => 'boolean'
@@ -94,5 +97,10 @@ class Notification extends Model
             return $err;
         }
         curl_close($ch);
+    }
+
+    public function getCreatedAtHumanAttribute()
+    {
+        return $this->created_at->diffForHumans();
     }
 }

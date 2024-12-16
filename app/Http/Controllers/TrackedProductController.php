@@ -27,8 +27,18 @@ class TrackedProductController extends Controller
         $user_id = $request->query('user_id');
         $user = User::find($user_id);
         $sort = $request->query('sort');
-        $get_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'));
-        $tracked_products = $get_tracked_products->whereHas('google_product', function (Builder $query) use ($user) {
+        $count_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'))
+            ->where('user_id', $user_id)
+            ->count();
+        $google_products = DB::table('tracked_products')
+        ->select('google_product_id', DB::raw('MAX(created_at) as latest_created_at'))
+        ->groupBy('google_product_id');
+        $tracked_products = TrackedProduct::query()
+        ->joinSub($google_products, 'latest_products', function ($join) {
+            $join->on('tracked_products.google_product_id', '=', 'latest_products.google_product_id')
+                ->on('tracked_products.created_at', '=', 'latest_products.latest_created_at');
+        })
+        ->whereHas('google_product', function (Builder $query) use ($user) {
             $query->where('country', $user->country);
         })
         ->when($user_id, function (Builder $query) use ($user_id) {
@@ -42,19 +52,18 @@ class TrackedProductController extends Controller
                 $q->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
             });
         })
-        ->when($sort, function (Builder $query) use ($sort){
-            $query->orderBy('updated_at', $sort);
+        ->when($sort, function (Builder $query) use ($sort) {
+            $query->orderBy('tracked_products.created_at', $sort);
         })
         ->with('google_product')
         ->paginate(10);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
         $current_savings = TrackedProduct::get_savings_badge($user);
-        $count_all_tracked_products = $get_tracked_products->count();
         return response()->json([
             'tracked_products' => $tracked_products,
             'items_tracked' => $items_tracked,
             'savings' => $current_savings,
-            'count_all_tracked_products' => $count_all_tracked_products
+            'count_all_tracked_products' => $count_tracked_products
         ], 200);
     }
 
@@ -106,15 +115,6 @@ class TrackedProductController extends Controller
                             $folders[] = $empty_folder;
                         }
                         foreach($folders as $folder) {
-                            $tracked_product = TrackedProduct::updateOrCreate([
-                                'google_product_id' => $product_data->id,
-                                'user_id' => $user->id,
-                                'folder_id' => $folder["id"],
-                            ], [
-                                'google_product_id' => $product_data->id,
-                                'user_id' => $user->id,
-                                'folder_id' => $folder["id"],
-                            ]);
                             $tracked_product = TrackedProduct::where('user_id', $user->id)
                                 ->where('google_product_id', $product_data->id)
                                 ->where('folder_id', $folder["id"])
@@ -128,14 +128,10 @@ class TrackedProductController extends Controller
                                 Point::create([
                                     'user_id' => $user->id,
                                     'tracked_product_id' => $tracked_product->id,
-                                    'points' => 5
+                                    'points' => 5,
+                                    'country' => $user->country
                                 ]);
                             }
-                            Point::create([
-                                'user_id' => $user->id,
-                                'tracked_product_id' => $tracked_product->id,
-                                'points' => 5
-                            ]);
                             $tracked_product->load('folder', 'google_product');
                             $tracked_products[] = $tracked_product;
                         }
@@ -144,7 +140,8 @@ class TrackedProductController extends Controller
                 if($single_product) {
                     $check_product = TrackedProduct::where('user_id', $user->id)
                         ->whereHas('google_product', function (Builder $query) use ($request) {
-                            $query->where('product_id', $request->product_id);
+                            $query->where('product_id', $request->product_id)
+                                ->where('merchant', $request->merchant);
                         })
                         ->first();
                     if($check_product) {
@@ -174,7 +171,8 @@ class TrackedProductController extends Controller
                         Point::create([
                             'user_id' => $user->id,
                             'tracked_product_id' => $new_tracked_product->id,
-                            'points' => 5
+                            'points' => 5,
+                            'country' => $user->country
                         ]);
                     }
                     return response()->json($new_tracked_product, 200);
@@ -206,12 +204,16 @@ class TrackedProductController extends Controller
         try {
             $google_product = GoogleProduct::where('product_id', $request->product_id)
                 ->where('merchant', $request->merchant)
+                ->whereHas('tracked_products', function (Builder $query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
                 ->with('tracked_products')
                 ->first();
             $tracked_product = TrackedProduct::where('user_id', $user->id)
                 ->where('google_product_id', $google_product->id)
                 ->with('google_product')
                 ->first();
+            return $tracked_product;
             if($google_product) {
                 if($tracked_product) {
                     return response()->json($tracked_product, 200);
@@ -309,18 +311,12 @@ class TrackedProductController extends Controller
                         }
                     }
                 }
-                if($point_equivalent_badge) {
-                    Point::updateOrCreate([
-                        'user_id' => $user->id,
-                        'google_product_id' => $tracked_product->google_product_id,
-                        'country' => $user->country
-                    ], [
-                        'user_id' => $user->id,
-                        'google_product_id' => $tracked_product->google_product_id,
-                        'points' => $saved_value,
-                        'country' => $user->country
-                    ]);
-                }
+                Point::create([
+                    'user_id' => $user->id,
+                    'google_product_id' => $tracked_product->google_product_id,
+                    'points' => $saved_value,
+                    'country' => $user->country
+                ]);
             }
             $tracked_product->save();
             $tracked_product->load('google_product');

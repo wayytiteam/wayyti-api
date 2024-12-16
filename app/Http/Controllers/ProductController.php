@@ -122,17 +122,50 @@ class ProductController extends Controller
         $url = "https://realtime.oxylabs.io/v1/queries";
 
         $params = array(
-            'source' => 'google_shopping_search',
-            'domain' => 'com',
-            'query' => $request->query('keyword'),
+            // 'source' => 'google_shopping_search',
+            'domain' => 'universal',
+            'url' => $request->query('url'),
+            // 'query' => $request->query('keyword'),
             'geo_location' => $request->query('geo_location'),
-            'pages' => 2,
-            'parse' => true,
-            'context' => [
-                ['key' => 'sort_by', 'value' => 'pd'],
-                ['key' => 'min_price', 'value' => 20]
+            'render' => 'html',
+            'browser_instructions' =>  [
+                [
+                    'type' => 'input',
+                    'value' => 'shoes',
+                    'selector' => [
+                        'type' => 'xpath',
+                        'value' => "//input[@class='search-box__input--O34g']"
+                    ]
+                ]
+            ],
+            'parsing_instructions' => [
+                "description" => [
+                    "_fns" => [
+                        [
+                            "_fn" => "xpath_one",
+                            "_args" => ["//div[@class='']"]
+                        ]
+                    ]
+                ]
             ]
+            // 'pages' => 2,
+            // 'parse' => true,
+            // 'context' => [
+            //     ['key' => 'sort_by', 'value' => 'pd'],
+            //     ['key' => 'min_price', 'value' => 20]
+            // ]
         );
+        // $sample_instructions = [
+        //     'type' => 'input',
+        //     'value' => 'shoes',
+        //     'selector' => [
+        //         'type' => 'xpath',
+        //         'value' => "//input[@class='searchInput']"
+        //     ]
+        // ];
+
+        // return $sample_instructions;
+
 
         $ch = curl_init();
 
@@ -180,7 +213,15 @@ class ProductController extends Controller
         // }
         // curl_close ($ch);
         $response_data = json_decode($response, true);
-
+        $x_path_result = [
+            "description" => [
+                "_fns" => [
+                    "_fn" => "xpath",
+                    "_args" => [".//div[@class='left-1AmIx']/text()"]
+                ]
+            ]
+        ];
+        return $x_path_result;
         $item_results = [];
 
         if (isset($response_data['results'][0]['content']['results']['organic'])) {
