@@ -20,7 +20,7 @@ class ReferralController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $referrals = Referral::get_referral_status($user->id);
+        $referrals = Referral::get_referral_status($user);
         return response()->json($referrals, 200);
     }
 

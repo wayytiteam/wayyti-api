@@ -83,7 +83,7 @@ class PriceUpdate extends Command
                                 $product->save();
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
-                                    'message' => $title.' '.'dropped in price',
+                                    'message' => $title.' '.'has dropped in price',
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_down',
                                     'country' => $user["country"]

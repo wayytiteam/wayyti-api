@@ -47,7 +47,7 @@ class Share extends Model
                         'type' => 'achievement_unlocked'
                     ]);
                     if($user->fcm_token) {
-                        Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                        Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                     }
                 }
                 $current_badge->badge_id = $badge_equivalent->id;
@@ -67,7 +67,7 @@ class Share extends Model
                     'type' => 'achievement_unlocked'
                 ]);
                 if($user->fcm_token) {
-                    Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
+                    Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                 }
             }
         }

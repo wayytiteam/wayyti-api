@@ -19,7 +19,8 @@ class NotificationController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $get_notifications =  Notification::where(function (Builder $query) use ($user) {
+        $get_notifications = Notification::where('user_id', $user->id)
+            ->where(function (Builder $query) use ($user) {
             $query->where('country', $user->country)
                 ->orWhereNull('country');
             })

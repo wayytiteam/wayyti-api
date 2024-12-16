@@ -17,7 +17,7 @@ class ShareController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $share_deal = Share::get_share_badge($user->id);
+        $share_deal = Share::get_share_badge($user);
         return response()->json($share_deal, 200);
     }
 
