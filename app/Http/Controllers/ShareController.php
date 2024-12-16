@@ -48,7 +48,8 @@ class ShareController extends Controller
                 ]);
                 Point::create([
                     'user_id' => $user->id,
-                    'share_id' => $share->id
+                    'share_id' => $share->id,
+                    'points' => '15'
                 ]);
                 $count_shares = Share::where('user_id', $user->id)
                     ->count();
