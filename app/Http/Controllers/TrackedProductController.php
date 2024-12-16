@@ -27,8 +27,15 @@ class TrackedProductController extends Controller
         $user_id = $request->query('user_id');
         $user = User::find($user_id);
         $sort = $request->query('sort');
-        $get_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'));
-        $tracked_products = $get_tracked_products->whereHas('google_product', function (Builder $query) use ($user) {
+        $google_products = DB::table('tracked_products')
+        ->select('google_product_id', DB::raw('MAX(created_at) as latest_created_at'))
+        ->groupBy('google_product_id');
+        $tracked_products = TrackedProduct::query()
+        ->joinSub($google_products, 'latest_products', function ($join) {
+            $join->on('tracked_products.google_product_id', '=', 'latest_products.google_product_id')
+                ->on('tracked_products.created_at', '=', 'latest_products.latest_created_at');
+        })
+        ->whereHas('google_product', function (Builder $query) use ($user) {
             $query->where('country', $user->country);
         })
         ->when($user_id, function (Builder $query) use ($user_id) {
@@ -42,14 +49,14 @@ class TrackedProductController extends Controller
                 $q->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
             });
         })
-        ->when($sort, function (Builder $query) use ($sort){
-            $query->orderBy('updated_at', $sort);
+        ->when($sort, function (Builder $query) use ($sort) {
+            $query->orderBy('tracked_products.created_at', $sort);
         })
         ->with('google_product')
         ->paginate(10);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
         $current_savings = TrackedProduct::get_savings_badge($user);
-        $count_all_tracked_products = $get_tracked_products->count();
+        $count_all_tracked_products = $tracked_products->count();
         return response()->json([
             'tracked_products' => $tracked_products,
             'items_tracked' => $items_tracked,

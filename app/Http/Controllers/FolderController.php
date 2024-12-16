@@ -19,6 +19,7 @@ class FolderController extends Controller
             $query->where('user_id', $user_id);
         })
         ->with(['tracked_products.google_product'])
+        ->orderBy('updated_at', 'desc')
         ->paginate(10);
 
         return response()->json($folders, 200);
