@@ -78,7 +78,6 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
-        $now = Carbon::now();
         $user->load('personas', 'recent_searches');
         if($request->query('password')) {
             try {
@@ -337,7 +336,7 @@ class UserController extends Controller
         try {
          $user = User::where('ios_id', $ios_id)->first();
          if($user){
-            $token = $user->createToken('Facebook Authentication')->accessToken;
+            $token = $user->createToken('Apple Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
                 'user' => $user
@@ -353,7 +352,7 @@ class UserController extends Controller
                             'email' => $email,
                             'email_verified_at' => Carbon::parse(now())
                         ]);
-                        $token = $user->createToken('Facebook Authentication')->accessToken;
+                        $token = $user->createToken('Apple Authentication')->accessToken;
                         return response()->json([
                             'token' => $token,
                             'user' => $user
@@ -366,7 +365,7 @@ class UserController extends Controller
                         'email' => $generated_email,
                         'email_verified_at' => Carbon::parse(now())
                     ]);
-                    $token = $user->createToken('Facebook Authentication')->accessToken;
+                    $token = $user->createToken('Apple Authentication')->accessToken;
                     return response()->json([
                         'token' => $token,
                         'user' => $user
@@ -398,29 +397,29 @@ class UserController extends Controller
     //     return $this->get_local_user($social_user);
     // }
 
-    public function get_local_user(Socialite $socialUser)
-    {
-        $user = User::where('ios_id', $socialUser->id)
-            ->first();
-        if (!$user) {
-            $user = $this->register_apple_user($socialUser);
-            return response()->json($user, 200);
-        } else {
-            $token = $user->createToken('Apple Login')->accessToken;
-            return response()->json(['user' => $user, 'token' => $token]);
-        }
-    }
+    // public function get_local_user(Socialite $socialUser)
+    // {
+    //     $user = User::where('ios_id', $socialUser->id)
+    //         ->first();
+    //     if (!$user) {
+    //         $user = $this->register_apple_user($socialUser);
+    //         return response()->json($user, 200);
+    //     } else {
+    //         $token = $user->createToken('Apple Login')->accessToken;
+    //         return response()->json(['user' => $user, 'token' => $token]);
+    //     }
+    // }
 
-    public function register_apple_user(Socialite $social_user) {
-        $new_user = User::create([
-                'email' => $social_user->email,
-                'email_verified_at' => now(),
-                'ios_id' => $social_user->id,
-            ]);
-        $token = $new_user->createToken('Apple Login')->accessToken;
+    // public function register_apple_user(Socialite $social_user) {
+    //     $new_user = User::create([
+    //             'email' => $social_user->email,
+    //             'email_verified_at' => now(),
+    //             'ios_id' => $social_user->id,
+    //         ]);
+    //     $token = $new_user->createToken('Apple Login')->accessToken;
 
-        return response()->json(['user' => $new_user, 'token' => $token]);
-    }
+    //     return response()->json(['user' => $new_user, 'token' => $token]);
+    // }
 
     // public function apple_sign_in_callback(Request $request)
     // {
@@ -488,7 +487,6 @@ class UserController extends Controller
         $user = $user = User::where('email', $request->email)->first();
         $cached_verification_code = Cache::get('verification_code' . $request->email);
         try {
-            // if($user->hasVerifiedEmail()){
             if ($cached_verification_code !== null) {
                 if ($cached_verification_code === (int)$request->verification_code) {
                     $user->markEmailAsVerified();
@@ -506,9 +504,6 @@ class UserController extends Controller
             } else {
                 throw new Exception('Verification code is either expired or already used. Please do note that verification code is only available for 24 hours');
             }
-            // } else {
-            //     throw new Exception('User is already Verified');
-            // }
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
