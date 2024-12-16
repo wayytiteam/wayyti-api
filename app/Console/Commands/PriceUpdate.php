@@ -85,7 +85,8 @@ class PriceUpdate extends Command
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'dropped in price',
                                     'tracked_product_id' => $tracked_product->id,
-                                    'type' => 'price_down'
+                                    'type' => 'price_down',
+                                    'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);
@@ -99,7 +100,8 @@ class PriceUpdate extends Command
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has went up in price',
                                     'tracked_product_id' => $tracked_product->id,
-                                    'type' => 'price_up'
+                                    'type' => 'price_up',
+                                    'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->mesage, $new_notification->message, $user->fcm_token);

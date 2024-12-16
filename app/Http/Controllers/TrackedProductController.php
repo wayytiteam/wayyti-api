@@ -128,7 +128,8 @@ class TrackedProductController extends Controller
                                 Point::create([
                                     'user_id' => $user->id,
                                     'tracked_product_id' => $tracked_product->id,
-                                    'points' => 5
+                                    'points' => 5,
+                                    'country' => $user->country
                                 ]);
                             }
                             $tracked_product->load('folder', 'google_product');
@@ -139,7 +140,8 @@ class TrackedProductController extends Controller
                 if($single_product) {
                     $check_product = TrackedProduct::where('user_id', $user->id)
                         ->whereHas('google_product', function (Builder $query) use ($request) {
-                            $query->where('product_id', $request->product_id);
+                            $query->where('product_id', $request->product_id)
+                                ->where('merchant', $request->merchant);
                         })
                         ->first();
                     if($check_product) {
@@ -169,7 +171,8 @@ class TrackedProductController extends Controller
                         Point::create([
                             'user_id' => $user->id,
                             'tracked_product_id' => $new_tracked_product->id,
-                            'points' => 5
+                            'points' => 5,
+                            'country' => $user->country
                         ]);
                     }
                     return response()->json($new_tracked_product, 200);

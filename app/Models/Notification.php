@@ -21,7 +21,8 @@ class Notification extends Model
         'tracked_product_id',
         'badge_id',
         'read',
-        'type'
+        'type',
+        'country'
     ];
 
     protected $appends = ['created_at_human'];

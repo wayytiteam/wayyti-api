@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\BadgeUser;
 use App\Models\Attendance;
 use App\Models\Badge;
-use App\Models\Point;
-use Illuminate\Support\Carbon;
 use App\Models\MonthlyDraw;
 use App\Models\Referral;
 use App\Models\Share;
@@ -36,8 +34,8 @@ class BadgeUserController extends Controller
         $monthly_draw = MonthlyDraw::get_monthly_draw_status($user);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
         $login_streak = Attendance::get_login_badge($user->id);
-        $share_deals = Share::get_share_badge($user->id);
-        $referrals = Referral::get_referral_status($user->id);
+        $share_deals = Share::get_share_badge($user);
+        $referrals = Referral::get_referral_status($user);
         $total_savings = TrackedProduct::get_savings_badge($user);
         return response()->json([
             'recent_badges' => $recent_badges,
