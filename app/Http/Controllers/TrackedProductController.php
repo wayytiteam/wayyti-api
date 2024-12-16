@@ -27,6 +27,9 @@ class TrackedProductController extends Controller
         $user_id = $request->query('user_id');
         $user = User::find($user_id);
         $sort = $request->query('sort');
+        $count_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'))
+            ->where('user_id', $user_id)
+            ->count();
         $google_products = DB::table('tracked_products')
         ->select('google_product_id', DB::raw('MAX(created_at) as latest_created_at'))
         ->groupBy('google_product_id');
@@ -56,12 +59,11 @@ class TrackedProductController extends Controller
         ->paginate(10);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
         $current_savings = TrackedProduct::get_savings_badge($user);
-        $count_all_tracked_products = $tracked_products->count();
         return response()->json([
             'tracked_products' => $tracked_products,
             'items_tracked' => $items_tracked,
             'savings' => $current_savings,
-            'count_all_tracked_products' => $count_all_tracked_products
+            'count_all_tracked_products' => $count_tracked_products
         ], 200);
     }
 
@@ -131,11 +133,6 @@ class TrackedProductController extends Controller
                                     'google_product_id' => $product_data->id,
                                     'user_id' => $user->id,
                                     'folder_id' => $folder["id"],
-                                ]);
-                                Point::create([
-                                    'user_id' => $user->id,
-                                    'tracked_product_id' => $tracked_product->id,
-                                    'points' => 5
                                 ]);
                             }
                             Point::create([
