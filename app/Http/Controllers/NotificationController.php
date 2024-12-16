@@ -55,7 +55,7 @@ class NotificationController extends Controller
             $product = $product->load('google_product');
             $title = $product->google_product->title;
             if($request->price_state === 'up') {
-                $message = $title.' '.'has went up in price';
+                $message = $title.' '.'has gone up in price';
                 $type = 'price_up';
             }else {
                 $message = $title.' '.'dropped in price';
