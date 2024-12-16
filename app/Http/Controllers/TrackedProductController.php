@@ -115,6 +115,9 @@ class TrackedProductController extends Controller
                             $folders[] = $empty_folder;
                         }
                         foreach($folders as $folder) {
+                            if($folder["id"] == "0") {
+                                $folder["id"] = null;
+                            }
                             $tracked_product = TrackedProduct::where('user_id', $user->id)
                                 ->where('google_product_id', $product_data->id)
                                 ->where('folder_id', $folder["id"])
