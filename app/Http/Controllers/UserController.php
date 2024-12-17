@@ -25,17 +25,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('is_admin', false)->paginate();
 
         return response()->json($users, 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -45,11 +37,8 @@ class UserController extends Controller
     {
         try {
             $user = User::where('email', $request->email)->first();
-            $has_password = false;
-            if($user && $user->password){
-                $has_password = true;
-            }
-            $new_user = User::updateOrCreate(
+            $has_password = $user && $user->password ? true : false;
+            $user = User::updateOrCreate(
                 [
                     'email' => $request->email,
                 ],
@@ -58,13 +47,11 @@ class UserController extends Controller
                     'password' => $request->password
                 ]
             );
-            $user = User::where('email', $new_user->email)->first();
+            $user = User::where('email', $user->email)->first();
             $user->toArray();
             $user['has_password'] = $has_password;
-            // $token = $new_user->createToken('Email Sign-up')->accessToken;
             return response()->json([
                 'user' => $user,
-                // 'token' => $token
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -94,26 +81,14 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, User $user)
     {
         try {
-            foreach ($request->all() as $key => $value) {
-                if (array_key_exists($key, $user->getAttributes())) {
-                    $user->$key = $value;
-                }
-            }
+            $user->update($request->only(array_keys($user->getAttributes())));
             if($request->new_password) {
-                $user->password = Hash::make($request->new_password);
+                $user->password = $request->new_password;
             }
             $user->save();
             $user->load('personas');
@@ -426,13 +401,13 @@ class UserController extends Controller
     //     return Socialite::driver('apple')->redirect();
     // }
 
-    public function apple_sign_in_callback(Request $request)
-    {
-        $redirectParams = http_build_query($request->all());
-        $redirect = "intent://callback?" . $redirectParams . "#Intent;package=api.smartsales.koda.ws;scheme=signinwithapple;end";
+    // public function apple_sign_in_callback(Request $request)
+    // {
+    //     $redirectParams = http_build_query($request->all());
+    //     $redirect = "intent://callback?" . $redirectParams . "#Intent;package=api.smartsales.koda.ws;scheme=signinwithapple;end";
 
-        return Redirect::to($redirect, 307);
-    }
+    //     return Redirect::to($redirect, 307);
+    // }
 
     public function request_verification_code(Request $request)
     {

@@ -163,6 +163,7 @@ class GoogleProductController extends Controller
             'domain' => 'com.ph',
             'query' => $request->query('product_id'),
             'parse' => true,
+
         );
 
         $ch = curl_init();
