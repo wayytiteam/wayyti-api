@@ -28,9 +28,13 @@ class TrackedProductController extends Controller
         $user_id = $request->query('user_id');
         $user = User::find($user_id);
         $sort = $request->query('sort');
-        $count_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'))
-            ->where('user_id', $user_id)
-            ->count();
+        $count_tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
+            $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
+                  ->from('tracked_products')
+                  ->where('user_id', $user_id)
+                  ->orderBy('google_product_id')
+                  ->orderBy('user_id');
+        })->count();
         $tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
             $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
                   ->from('tracked_products')
