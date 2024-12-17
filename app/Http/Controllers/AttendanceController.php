@@ -107,7 +107,7 @@ class AttendanceController extends Controller
                         'type' => 'achievement_unlocked'
                     ]);
                     if($user->fcm_token){
-                        Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token, $new_notification);
+                        Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
                     }
                 }
             }
@@ -129,7 +129,7 @@ class AttendanceController extends Controller
                 'type' => 'achievement_unlocked'
             ]);
             if($user->fcm_token) {
-                Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token, $new_notification);
+                Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
             }
         }
         $next_login_badge = Badge::where('type', 'login')
