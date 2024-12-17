@@ -16,7 +16,7 @@ class BannerController extends Controller
     {
         $banners = Banner::where('active', true)
             ->orderBy('created_at', 'desc',)
-            ->limit(3);
+            ->limit(4);
         $banners = $banners->paginate(10);
 
         return response()->json($banners, 200);

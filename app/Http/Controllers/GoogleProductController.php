@@ -150,6 +150,8 @@ class GoogleProductController extends Controller
 
     public function scrape(Request $request)
     {
+        // $url = urldecode('https://thegooniesph.com/products/exodia%3Fvariant%3D46102064529694%26country%3DPH%26currency%3DPHP%26utm_medium%3Dproduct_sync%26utm_source%3Dgoogle%26utm_content%3Dsag_organic%26utm_campaign%3Dsag_organic%26');
+        // return $url;
         $username = env('OXYLABS_USERNAME');
         $password = env('OXYLABS_PASSWORD');
 
