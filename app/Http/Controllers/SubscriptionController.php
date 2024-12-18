@@ -57,9 +57,10 @@ class SubscriptionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Subscription $subscriptions)
+    public function show(Subscription $subscription)
     {
-        //
+        $subscription->load('user');
+        return response($subscription, 200);
     }
 
     /**
@@ -73,9 +74,11 @@ class SubscriptionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Subscription $subscriptions)
+    public function update(Request $request, Subscription $subscription)
     {
-        //
+        $subscription->update($request->only(array_keys($subscription->getAttributes())));
+        $subscription->save();
+        return response($subscription, 200);
     }
 
     /**

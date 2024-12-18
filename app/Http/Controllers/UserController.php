@@ -65,7 +65,7 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
-        $user->load('personas', 'recent_searches');
+        $user->load('personas', 'recent_searches', 'subscription');
         if($request->query('password')) {
             try {
                 if (!(Hash::check($request->query('password'), $user->password))) {
