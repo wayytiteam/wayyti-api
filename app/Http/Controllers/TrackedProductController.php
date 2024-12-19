@@ -259,7 +259,8 @@ class TrackedProductController extends Controller
             if($request->deal) {
                 $product_detail = GoogleProduct::find($tracked_product->google_product_id);
                 $saved_value = ((float)$product_detail->original_price - (float)$product_detail->latest_price) * (float)$request->quantity;
-                $saved_value = $saved_value < 0 ? $saved_value = 0 : $saved_value = $saved_value;
+                // $saved_value = $saved_value < 0 ? $saved_value = 0 : $saved_value = $saved_value;
+                $saved_value = number_format($saved_value, 2);
                 $tracked_google_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $tracked_product->google_product_id)
                     ->get();
