@@ -6,6 +6,7 @@ use App\Models\GoogleProduct;
 use App\Models\Point;
 use App\Models\TrackedProduct;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -27,25 +28,25 @@ class TrackedProductController extends Controller
         $user_id = $request->query('user_id');
         $user = User::find($user_id);
         $sort = $request->query('sort');
-        $count_tracked_products = TrackedProduct::select(DB::raw('DISTINCT ON (google_product_id) *'))
-            ->where('user_id', $user_id)
-            ->count();
-        $google_products = DB::table('tracked_products')
-        ->select('google_product_id', DB::raw('MAX(created_at) as latest_created_at'))
-        ->groupBy('google_product_id');
-        $tracked_products = TrackedProduct::query()
-        ->joinSub($google_products, 'latest_products', function ($join) {
-            $join->on('tracked_products.google_product_id', '=', 'latest_products.google_product_id')
-                ->on('tracked_products.created_at', '=', 'latest_products.latest_created_at');
+        $count_tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
+            $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
+                  ->from('tracked_products')
+                  ->where('user_id', $user_id)
+                  ->orderBy('google_product_id')
+                  ->orderBy('user_id');
+        })->count();
+        $tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
+            $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
+                  ->from('tracked_products')
+                  ->where('user_id', $user_id)
+                  ->when($folder_id, function ($sub_query) use ($folder_id) {
+                    $sub_query->where('folder_id', $folder_id);
+                    })
+                  ->orderBy('google_product_id')
+                  ->orderBy('user_id');
         })
         ->whereHas('google_product', function (Builder $query) use ($user) {
             $query->where('country', $user->country);
-        })
-        ->when($user_id, function (Builder $query) use ($user_id) {
-            $query->where('user_id', $user_id);
-        })
-        ->when($folder_id, function (Builder $query) use ($folder_id) {
-            $query->where('folder_id', $folder_id);
         })
         ->when($keyword, function (Builder $query) use ($keyword){
             $query->whereHas('google_product', function (Builder $q) use ($keyword) {
@@ -55,6 +56,7 @@ class TrackedProductController extends Controller
         ->when($sort, function (Builder $query) use ($sort) {
             $query->orderBy('tracked_products.created_at', $sort);
         })
+        ->distinct()
         ->with('google_product')
         ->paginate(10);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
@@ -115,6 +117,9 @@ class TrackedProductController extends Controller
                             $folders[] = $empty_folder;
                         }
                         foreach($folders as $folder) {
+                            if($folder["id"] == "0") {
+                                $folder["id"] = null;
+                            }
                             $tracked_product = TrackedProduct::where('user_id', $user->id)
                                 ->where('google_product_id', $product_data->id)
                                 ->where('folder_id', $folder["id"])

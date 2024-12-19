@@ -150,6 +150,8 @@ class GoogleProductController extends Controller
 
     public function scrape(Request $request)
     {
+        // $url = urldecode('https://thegooniesph.com/products/exodia%3Fvariant%3D46102064529694%26country%3DPH%26currency%3DPHP%26utm_medium%3Dproduct_sync%26utm_source%3Dgoogle%26utm_content%3Dsag_organic%26utm_campaign%3Dsag_organic%26');
+        // return $url;
         $username = env('OXYLABS_USERNAME');
         $password = env('OXYLABS_PASSWORD');
 
@@ -158,9 +160,10 @@ class GoogleProductController extends Controller
         $params = array(
             'source' => 'google_shopping_product',
             'geo_location' => $request->query('geo_location'),
-            'domain' => 'com.ph',
+            'domain' => 'com',
             'query' => $request->query('product_id'),
             'parse' => true,
+
         );
 
         $ch = curl_init();
@@ -247,6 +250,57 @@ class GoogleProductController extends Controller
         }
 
         return response()->json($item_results, 200);
+    }
+
+    public function browser_instruction(Request $request) {
+        $oxylabs_username = env('OXYLABS_USERNAME');
+        $oxylabs_password = env('OXYLABS_PASSWORD');
+        $url = $request->query('url');
+         $params = array(
+            "source" => "universal",
+            "url" => $url,
+            // "render" => "html",
+            "parse" => true,
+            // "browser_instructions" => [
+            //     [
+            //         "type" => "click",
+            //         "selector" => [
+            //             "type" => "xpath",
+            //             "value" => "//input[@class='internal-link']"
+            //         ]
+            //     ]
+            // ],
+            "parsing_instructions" => [
+                [
+                    "full_list_of_sellers" => [
+                        [
+                            "seller" => [
+                                "_fn" => "xpath_one",
+                                "_args" => ["//a[@class='b5ycib shntl']/text()"]
+                            ]
+                        ],
+                        [
+                            "price" => [
+                                "_fn" => "xpath_one",
+                                "_args" => ["//div[@class='drzWO']/text()"]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+         );
+        // $query_string = http_build_query($params);
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, $url."?".$query_string);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // curl_setopt($ch, CURLOPT_USERPWD, $oxylabs_username . ":" . $oxylabs_password);
+
+        // $headers = array();
+        // $headers[] = "Content-Type: application/json";
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        // $result = curl_exec($ch);
+        return $params;
     }
 
     public function test_price_update(Request $request){

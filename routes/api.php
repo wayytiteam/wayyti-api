@@ -24,6 +24,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrackedProductController;
 use App\Http\Controllers\UserController;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Route;
 
 Route::post('users/email', [UserController::class, 'email_sign_in']);
@@ -37,6 +38,7 @@ Route::get('users/check-email', [UserController::class, 'check_email']);
 Route::post('users/reset-password', [UserController::class, 'reset_password']);
 Route::get('products/scrape', [ProductController::class, 'scrape']);
 Route::get('google-products/scrape', [GoogleProductController::class, 'scrape']);
+Route::get('google-products/browser-instruction', [GoogleProductController::class, 'browser_instruction']);
 Route::post('tasks/mail-incomplete-profiles', [TaskController::class, 'mail_incomplete_profiles']);
 Route::post('google-products/test-price-update', [GoogleProductController::class, 'test_price_update']);
 Route::post('notifications/test', [NotificationController::class, 'test']);
@@ -46,7 +48,7 @@ Route::resource('personas', PersonaController::class);
 Route::middleware('auth:api')->group(function () {
     Route::post('users/check-password', [UserController::class, 'check_password']);
     Route::post('users/welcome-email', [UserController::class, 'welcome_email']);
-    Route::resource('subscriptions', SubscriptionController::class)->only(['store']);
+    // Route::resource('subscriptions', SubscriptionController::class)->only(['store']);
     Route::get('tracked-products/google-product-details', [TrackedProductController::class, 'google_product_details']);
     Route::apiResources([
         'users' => UserController::class,
@@ -65,6 +67,7 @@ Route::middleware('auth:api')->group(function () {
         'notifications' => NotificationController::class,
         'products' => ProductController::class,
         'banners' => BannerController::class,
+        'subscriptions' => SubscriptionController::class
     ]);
 });
 

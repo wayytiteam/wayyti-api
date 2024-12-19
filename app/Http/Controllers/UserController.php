@@ -17,6 +17,7 @@ use App\Mail\OTPSent;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use PhpParser\Node\Expr\Throw_;
 
 class UserController extends Controller
 {
@@ -25,17 +26,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('is_admin', false)->paginate();
 
         return response()->json($users, 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -45,11 +38,8 @@ class UserController extends Controller
     {
         try {
             $user = User::where('email', $request->email)->first();
-            $has_password = false;
-            if($user && $user->password){
-                $has_password = true;
-            }
-            $new_user = User::updateOrCreate(
+            $has_password = $user && $user->password ? true : false;
+            $user = User::updateOrCreate(
                 [
                     'email' => $request->email,
                 ],
@@ -58,13 +48,11 @@ class UserController extends Controller
                     'password' => $request->password
                 ]
             );
-            $user = User::where('email', $new_user->email)->first();
+            $user = User::where('email', $user->email)->first();
             $user->toArray();
             $user['has_password'] = $has_password;
-            // $token = $new_user->createToken('Email Sign-up')->accessToken;
             return response()->json([
                 'user' => $user,
-                // 'token' => $token
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -78,8 +66,7 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
-        $now = Carbon::now();
-        $user->load('personas', 'recent_searches');
+        $user->load('personas', 'recent_searches', 'subscription');
         if($request->query('password')) {
             try {
                 if (!(Hash::check($request->query('password'), $user->password))) {
@@ -95,26 +82,14 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, User $user)
     {
         try {
-            foreach ($request->all() as $key => $value) {
-                if (array_key_exists($key, $user->getAttributes())) {
-                    $user->$key = $value;
-                }
-            }
+            $user->update($request->only(array_keys($user->getAttributes())));
             if($request->new_password) {
-                $user->password = Hash::make($request->new_password);
+                $user->password = $request->new_password;
             }
             $user->save();
             $user->load('personas');
@@ -263,11 +238,16 @@ class UserController extends Controller
 
             $user = User::where('google_id', $google_credential->id)->first();
             if (!$user) {
-                $user = User::create([
-                    'google_id' => $google_credential->id,
-                    'email' => $google_credential->email,
-                    'email_verified_at' => Carbon::parse(now())
-                ]);
+                $check_email = User::where('email', $google_credential->email)->first();
+                if(!$check_email) {
+                    $user = User::create([
+                        'google_id' => $google_credential->id,
+                        'email' => $google_credential->email,
+                        'email_verified_at' => Carbon::parse(now())
+                    ]);
+                } else {
+                    Throw new Exception("Email is already used", 401);
+                }
             }
             $token = $user->createToken('Google Authentication')->accessToken;
 
@@ -277,9 +257,8 @@ class UserController extends Controller
             ], 200);
         }catch (\Exception $e) {
             return response()->json([
-                'message' => 'Something went wrong',
                 'error' => $e->getMessage()
-            ], 400);
+            ], $e->getCode());
         }
     }
 
@@ -337,7 +316,7 @@ class UserController extends Controller
         try {
          $user = User::where('ios_id', $ios_id)->first();
          if($user){
-            $token = $user->createToken('Facebook Authentication')->accessToken;
+            $token = $user->createToken('Apple Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
                 'user' => $user
@@ -353,7 +332,7 @@ class UserController extends Controller
                             'email' => $email,
                             'email_verified_at' => Carbon::parse(now())
                         ]);
-                        $token = $user->createToken('Facebook Authentication')->accessToken;
+                        $token = $user->createToken('Apple Authentication')->accessToken;
                         return response()->json([
                             'token' => $token,
                             'user' => $user
@@ -366,7 +345,7 @@ class UserController extends Controller
                         'email' => $generated_email,
                         'email_verified_at' => Carbon::parse(now())
                     ]);
-                    $token = $user->createToken('Facebook Authentication')->accessToken;
+                    $token = $user->createToken('Apple Authentication')->accessToken;
                     return response()->json([
                         'token' => $token,
                         'user' => $user
@@ -398,42 +377,42 @@ class UserController extends Controller
     //     return $this->get_local_user($social_user);
     // }
 
-    public function get_local_user(Socialite $socialUser)
-    {
-        $user = User::where('ios_id', $socialUser->id)
-            ->first();
-        if (!$user) {
-            $user = $this->register_apple_user($socialUser);
-            return response()->json($user, 200);
-        } else {
-            $token = $user->createToken('Apple Login')->accessToken;
-            return response()->json(['user' => $user, 'token' => $token]);
-        }
-    }
+    // public function get_local_user(Socialite $socialUser)
+    // {
+    //     $user = User::where('ios_id', $socialUser->id)
+    //         ->first();
+    //     if (!$user) {
+    //         $user = $this->register_apple_user($socialUser);
+    //         return response()->json($user, 200);
+    //     } else {
+    //         $token = $user->createToken('Apple Login')->accessToken;
+    //         return response()->json(['user' => $user, 'token' => $token]);
+    //     }
+    // }
 
-    public function register_apple_user(Socialite $social_user) {
-        $new_user = User::create([
-                'email' => $social_user->email,
-                'email_verified_at' => now(),
-                'ios_id' => $social_user->id,
-            ]);
-        $token = $new_user->createToken('Apple Login')->accessToken;
+    // public function register_apple_user(Socialite $social_user) {
+    //     $new_user = User::create([
+    //             'email' => $social_user->email,
+    //             'email_verified_at' => now(),
+    //             'ios_id' => $social_user->id,
+    //         ]);
+    //     $token = $new_user->createToken('Apple Login')->accessToken;
 
-        return response()->json(['user' => $new_user, 'token' => $token]);
-    }
+    //     return response()->json(['user' => $new_user, 'token' => $token]);
+    // }
 
     // public function apple_sign_in_callback(Request $request)
     // {
     //     return Socialite::driver('apple')->redirect();
     // }
 
-    public function apple_sign_in_callback(Request $request)
-    {
-        $redirectParams = http_build_query($request->all());
-        $redirect = "intent://callback?" . $redirectParams . "#Intent;package=api.smartsales.koda.ws;scheme=signinwithapple;end";
+    // public function apple_sign_in_callback(Request $request)
+    // {
+    //     $redirectParams = http_build_query($request->all());
+    //     $redirect = "intent://callback?" . $redirectParams . "#Intent;package=api.smartsales.koda.ws;scheme=signinwithapple;end";
 
-        return Redirect::to($redirect, 307);
-    }
+    //     return Redirect::to($redirect, 307);
+    // }
 
     public function request_verification_code(Request $request)
     {
@@ -488,7 +467,6 @@ class UserController extends Controller
         $user = $user = User::where('email', $request->email)->first();
         $cached_verification_code = Cache::get('verification_code' . $request->email);
         try {
-            // if($user->hasVerifiedEmail()){
             if ($cached_verification_code !== null) {
                 if ($cached_verification_code === (int)$request->verification_code) {
                     $user->markEmailAsVerified();
@@ -506,9 +484,6 @@ class UserController extends Controller
             } else {
                 throw new Exception('Verification code is either expired or already used. Please do note that verification code is only available for 24 hours');
             }
-            // } else {
-            //     throw new Exception('User is already Verified');
-            // }
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
