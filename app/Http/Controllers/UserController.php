@@ -17,6 +17,7 @@ use App\Mail\OTPSent;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use PhpParser\Node\Expr\Throw_;
 
 class UserController extends Controller
 {
@@ -237,11 +238,16 @@ class UserController extends Controller
 
             $user = User::where('google_id', $google_credential->id)->first();
             if (!$user) {
-                $user = User::create([
-                    'google_id' => $google_credential->id,
-                    'email' => $google_credential->email,
-                    'email_verified_at' => Carbon::parse(now())
-                ]);
+                $check_email = User::where('email', $google_credential->email)->first();
+                if(!$check_email) {
+                    $user = User::create([
+                        'google_id' => $google_credential->id,
+                        'email' => $google_credential->email,
+                        'email_verified_at' => Carbon::parse(now())
+                    ]);
+                } else {
+                    Throw new Exception("Email is already used", 401);
+                }
             }
             $token = $user->createToken('Google Authentication')->accessToken;
 
@@ -251,9 +257,8 @@ class UserController extends Controller
             ], 200);
         }catch (\Exception $e) {
             return response()->json([
-                'message' => 'Something went wrong',
                 'error' => $e->getMessage()
-            ], 400);
+            ], $e->getCode());
         }
     }
 
