@@ -53,7 +53,7 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
         'team_id' => env('APPLE_TEAM_ID'),
         'key_id' => env('APPLE_KEY_ID'),
-        'private_key' => storage_path('keys/AuthKey_N235YD8AZ8.p8'),
+        'private_key' => storage_path('keys/AuthKey_6Y8LCM64US.p8'),
     ],
 
     'fcm' => [
