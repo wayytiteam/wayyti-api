@@ -128,7 +128,7 @@ class ProductController extends Controller
             // 'query' => $request->query('keyword'),
             // 'geo_location' => $request->query('geo_location'),
             'source' => 'google_shopping_search',
-            'domain' => 'com',
+            'domain' => $request->query('domain'),
             'query' => $request->query('keyword'),
             'geo_location' => $request->query('geo_location'),
             'pages' => 4,
