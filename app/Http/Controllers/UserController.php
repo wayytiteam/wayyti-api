@@ -208,7 +208,7 @@ class UserController extends Controller
             }
         } catch (\Exception $e) {
          return response()->json([
-             'error' => $e->getMessage()
+             'message' => $e->getMessage()
          ], 400);
         }
     }
@@ -289,7 +289,7 @@ class UserController extends Controller
             }
         } catch (\Exception $e) {
          return response()->json([
-             'error' => $e->getMessage()
+             'message' => $e->getMessage()
          ], 400);
         }
     }
