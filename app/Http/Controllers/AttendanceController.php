@@ -106,9 +106,9 @@ class AttendanceController extends Controller
                         'badge_id' => $login_badge_acquired->id,
                         'type' => 'achievement_unlocked'
                     ]);
-                    if($user->fcm_token){
-                        Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
-                    }
+                    // if($user->fcm_token){
+                    //     Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
+                    // }
                 }
             }
         } else {
@@ -128,9 +128,9 @@ class AttendanceController extends Controller
                 'badge_id' => $login_badge_acquired->id,
                 'type' => 'achievement_unlocked'
             ]);
-            if($user->fcm_token) {
-                Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
-            }
+            // if($user->fcm_token) {
+            //     Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token, $new_notification);
+            // }
         }
         $next_login_badge = Badge::where('type', 'login')
             ->where('requirement_value', '>', $current_streak)
