@@ -12,4 +12,4 @@ Route::get('/artisan_schedule_run', function () {
     Artisan::call('schedule:run');
 });
 
-Route::post('/auth/apple/callback', [UserController::class, 'apple_sign_in_callback']);
+// Route::post('/auth/apple/callback', [UserController::class, 'apple_sign_in_callback']);
