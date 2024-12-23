@@ -84,13 +84,13 @@ class PriceUpdate extends Command
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has dropped in price',
-                                    'description' => 'current price: '.$product->currency.$matching_item['price'],
+                                    'description' => 'Current Price: '.$product->currency.$matching_item['price'],
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_down',
                                     'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
-                                    Notification::send_notification($new_notification->mesage, $new_notification->description, $user->fcm_token);
+                                    Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                                 }
                             }
                             if($matching_item['price'] > $product->latest_price) {
@@ -100,13 +100,13 @@ class PriceUpdate extends Command
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title.' '.'has gone up in price',
-                                    'description' => 'current price: '.$product->currency.$matching_item['price'],
+                                    'description' => 'Current Price: '.$product->currency.$matching_item['price'],
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_up',
                                     'country' => $user["country"]
                                 ]);
                                 if($user->fcm_token) {
-                                    Notification::send_notification($new_notification->mesage, $new_notification->description, $user->fcm_token);
+                                    Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                                 }
                             }
                         }
