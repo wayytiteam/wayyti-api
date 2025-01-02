@@ -83,49 +83,50 @@ class NotificationController extends Controller
     public function test(Request $request) {
         $title = $request->title;
         $body = $request->body;
-        $token = $request->fcm_token;
-        // Notification::send_notification($title, $body, $token);
-        $project_id = config('services.fcm.project_id');
-        $bucket_file = 'smartsale-private-key.json';
-        $local_file_path = storage_path('smartsale-private-key.json');
-        $file_content = Storage::disk('s3')->get($bucket_file);
-        file_put_contents($local_file_path, $file_content);
-        $client = new GoogleClient();
-        $client->setAuthConfig($local_file_path);
-        $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
-        $client->fetchAccessTokenWithAssertion();
-        $token = $client->getAccessToken();
-        $access_token = $token['access_token'];
+        $fcm_token = $request->fcm_token;
+        Notification::send_notification($title, $body, $fcm_token);
+        // $project_id = config('services.fcm.project_id');
+        // $bucket_file = 'smartsale-private-key.json';
+        // $local_file_path = storage_path('smartsale-private-key.json');
+        // $file_content = Storage::disk('s3')->get($bucket_file);
+        // file_put_contents($local_file_path, $file_content);
+        // $client = new GoogleClient();
+        // $client->setAuthConfig($local_file_path);
+        // $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+        // $client->fetchAccessTokenWithAssertion();
+        // $token = $client->getAccessToken();
+        // $access_token = $token['access_token'];
 
-        $headers = [
-            "Authorization: Bearer $access_token",
-            'Content-type: application/json'
-        ];
+        // $headers = [
+        //     "Authorization: Bearer $access_token",
+        //     'Content-type: application/json'
+        // ];
 
-        $data = [
-            "message" => [
-                "token" => $token,
-                "notification" => [
-                    "title" => $title,
-                    "body" => $body
-                ],
-            ]
-        ];
+        // $data = [
+        //     "message" => [
+        //         "token" => $fcm_token,
+        //         "notification" => [
+        //             "title" => $title,
+        //             "body" => $body
+        //         ],
+        //     ]
+        // ];
 
-        $payload = json_encode($data);
+        // $payload = json_encode($data);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://fcm.googleapis.com/v1/projects/{$project_id}/messages:send");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
-        $response = curl_exec($ch);
-        return response()->json([
-            'message' => 'Hope it works. Please check on your end'
-        ], 200);
+        // $ch = curl_init();
+        // curl_setopt($ch, CURLOPT_URL, "https://fcm.googleapis.com/v1/projects/{$project_id}/messages:send");
+        // curl_setopt($ch, CURLOPT_POST, true);
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        // curl_setopt($ch, CURLOPT_VERBOSE, true);
+        // $response = curl_exec($ch);
+        // return ($response);
+        // return response()->json([
+        //     'message' => 'Hope it works. Please check on your end'
+        // ], 200);
     }
 
     /**
