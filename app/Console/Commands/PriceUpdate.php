@@ -81,10 +81,12 @@ class PriceUpdate extends Command
                                 $product->original_price = $product->latest_price;
                                 $product->latest_price = $matching_item['price'];
                                 $product->save();
+                                $new_price = $product->currency.$matching_item['price'];
+                                $old_price = $product->currency.$product->original_price;
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
-                                    'message' => $title.' '.'has dropped in price',
-                                    'description' => 'Current Price: '.$product->currency.$matching_item['price'],
+                                    'message' => $title.' '.'has dropped in price from '.$old_price.' to '.$new_price,
+                                    'description' => 'Current Price: '.$new_price,
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_down',
                                     'country' => $user["country"]
