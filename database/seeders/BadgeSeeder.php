@@ -60,6 +60,7 @@ class BadgeSeeder extends Seeder
             ['name' => 'Point Starter','type' => 'monthly-draw', 'points_equivalent' => 750, 'requirement_value' => 5],
             ['name' => 'Point Starter','type' => 'monthly-draw', 'points_equivalent' => 1000, 'requirement_value' => 6],
             ['name' => 'Point Starter','type' => 'monthly-draw', 'points_equivalent' => 1500, 'requirement_value' => 7],
+            ['name' => 'Starter','type' => 'rank', 'points_equivalent' => 50, 'requirement_value' => 50],
             ['name' => 'Enthusiast','type' => 'rank', 'points_equivalent' => 100, 'requirement_value' => 100],
             ['name' => 'Collector','type' => 'rank', 'points_equivalent' => 250, 'requirement_value' => 250],
             ['name' => 'Achiever','type' => 'rank', 'points_equivalent' => 500, 'requirement_value' => 500],
@@ -69,7 +70,10 @@ class BadgeSeeder extends Seeder
 
         ];
         foreach($badges as $badge) {
-            Badge::updateOrCreate($badge,$badge);
+            $check_badge = Badge::where('name', $badge['name'])->first();
+            if(!$check_badge) {
+                Badge::updateOrCreate($badge,$badge);
+            }
         }
     }
 }
