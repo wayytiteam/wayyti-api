@@ -38,4 +38,5 @@ auth.json
 npm-debug.log
 yarn-error.log
 smartsale-private-key.json
+google-play-service-key.json
 .rnd
