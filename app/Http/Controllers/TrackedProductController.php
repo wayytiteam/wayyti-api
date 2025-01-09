@@ -214,12 +214,11 @@ class TrackedProductController extends Controller
                 })
                 ->with('tracked_products')
                 ->first();
-            $tracked_product = TrackedProduct::where('user_id', $user->id)
-                ->where('google_product_id', $google_product->id)
-                ->with('google_product')
-                ->first();
-            return $tracked_product;
             if($google_product) {
+                $tracked_product = TrackedProduct::where('user_id', $user->id)
+                    ->where('google_product_id', $google_product->id)
+                    ->with('google_product')
+                    ->first();
                 if($tracked_product) {
                     return response()->json($tracked_product, 200);
                 } else {
@@ -228,7 +227,6 @@ class TrackedProductController extends Controller
             } else {
                 Throw new Exception("This product is not yet tracked", 404);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
