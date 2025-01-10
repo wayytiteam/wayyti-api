@@ -443,7 +443,7 @@ class UserController extends Controller
             $verification_code_timestamp = now()->addHours(24);
             Cache::put('verification_code' . $email, $verification_code, $verification_code_timestamp);
             Cache::put('verification_code_timestamp' . $email, $verification_code_timestamp);
-            Mail::to($email)->queue(new OTPSent(
+            Mail::to($email)->send(new OTPSent(
                 $verification_code,
                 $header_message,
                 $subject,
