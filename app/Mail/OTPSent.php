@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class OTPSent extends Mailable implements ShouldQueue
+class OTPSent extends Mailable
 {
     use Queueable, SerializesModels;
 
