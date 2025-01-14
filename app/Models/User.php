@@ -37,6 +37,7 @@ class User extends Authenticatable
         'age_group',
         'fcm_token',
         'is_admin',
+        'has_reviewed'
     ];
 
     protected $appends = ['completed','status','total_entries'];
@@ -61,6 +62,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'has_reviewed' => 'boolean'
         ];
     }
 
