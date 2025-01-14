@@ -72,7 +72,14 @@ class PointController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = User::find($request->user_id);
+        $add_points = $request->points;
+        $points_added = Point::create([
+            'user_id' => $user->id,
+            'points' => $request->points
+        ]);
+
+        return response()->json($points_added, 200);
     }
 
     /**

@@ -36,7 +36,7 @@ class User extends Authenticatable
         'country',
         'age_group',
         'fcm_token',
-        'is_admin'
+        'is_admin',
     ];
 
     protected $appends = ['completed','status','total_entries'];

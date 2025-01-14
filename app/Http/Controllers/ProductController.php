@@ -131,7 +131,7 @@ class ProductController extends Controller
             'domain' => $request->query('domain'),
             'query' => $request->query('keyword'),
             'geo_location' => $request->query('geo_location'),
-            'pages' => 4,
+            'pages' => 2,
             'parse' => true,
             'context' => [
                 ['key' => 'sort_by', 'value' => 'pd'],
