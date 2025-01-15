@@ -169,6 +169,7 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('facebook_id', $facebook_id)->first();
+         $user->load('personas');
          if($user){
             $token = $user->createToken('Facebook Authentication')->accessToken;
             return response()->json([
