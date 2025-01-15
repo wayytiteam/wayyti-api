@@ -200,6 +200,7 @@ class UserController extends Controller
                         'email_verified_at' => Carbon::parse(now())
                     ]);
                     $token = $user->createToken('Facebook Authentication')->accessToken;
+                    $user->load('personas');
                     return response()->json([
                         'token' => $token,
                         'user' => $user
@@ -231,6 +232,7 @@ class UserController extends Controller
                     Throw new Exception("Email is already used", 401);
                 }
             }
+            $user->load('personas');
             $token = $user->createToken('Google Authentication')->accessToken;
 
             return response()->json([
@@ -250,6 +252,7 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('ios_id', $ios_id)->first();
+         $user->load('personas');
          if($user){
             $token = $user->createToken('Apple Authentication')->accessToken;
             return response()->json([
