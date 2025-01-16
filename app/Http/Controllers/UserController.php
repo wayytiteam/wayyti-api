@@ -220,7 +220,6 @@ class UserController extends Controller
     {
         try{
             $google_credential = Socialite::driver('google')->userFromToken($request->access_token);
-
             $user = User::where('google_id', $google_credential->id)->first();
             if (!$user) {
                 $check_email = User::where('email', $google_credential->email)->first();
