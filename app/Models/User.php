@@ -68,7 +68,9 @@ class User extends Authenticatable
 
     public function personas(): BelongsToMany
     {
-        return $this->belongsToMany(Persona::class);
+        return $this->belongsToMany(Persona::class)
+                    ->withTimestamps()
+                    ->orderBy('persona_user.created_at', 'asc');
     }
 
     public function folders(): HasMany

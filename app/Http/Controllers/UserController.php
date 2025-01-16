@@ -70,7 +70,7 @@ class UserController extends Controller
      */
     public function show(User $user, Request $request)
     {
-        $user->load('personas', 'recent_searches', 'subscription');
+        $user->load(['personas', 'recent_searches', 'subscription']);
         if($request->query('password')) {
             try {
                 if (!(Hash::check($request->query('password'), $user->password))) {
@@ -188,6 +188,7 @@ class UserController extends Controller
                             'email_verified_at' => Carbon::parse(now())
                         ]);
                         $token = $user->createToken('Facebook Authentication')->accessToken;
+
                         return response()->json([
                             'token' => $token,
                             'user' => $user
