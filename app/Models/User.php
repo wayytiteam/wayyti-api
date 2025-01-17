@@ -70,7 +70,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Persona::class)
                     ->withTimestamps()
-                    ->orderBy('persona_user.created_at', 'desc');
+                    ->orderBy('persona_user.created_at', 'asc');
     }
 
     public function folders(): HasMany
