@@ -70,10 +70,11 @@ class BadgeSeeder extends Seeder
 
         ];
         foreach($badges as $badge) {
-            $check_badge = Badge::where('name', $badge['name'])->first();
-            if(!$check_badge) {
-                Badge::updateOrCreate($badge,$badge);
-            }
+            // $check_badge = Badge::where('name', $badge['name'])->first();
+            // if(!$check_badge) {
+            //     Badge::updateOrCreate($badge,$badge);
+            // }
+            Badge::updateOrCreate($badge,$badge);
         }
     }
 }

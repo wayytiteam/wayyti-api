@@ -23,11 +23,9 @@ class AttendanceController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $user_id = $user->id;
-        $attendances = Attendance::where('user_id', $user_id)->get();
-        return $attendances;
-        // $login_streak = Attendance::get_login_badge($user->id);
-        // return response()->json($login_streak, 200);
+        // $user_id = $user->id;
+        $login_streak = Attendance::get_login_badge($user->id);
+        return response()->json($login_streak, 200);
     }
 
     /**

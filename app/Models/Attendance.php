@@ -25,23 +25,17 @@ class Attendance extends Model
 
     public static function get_login_badge($user_id) {
         $start_of_last_login_streak = DB::table('attendances as x')
-        ->select('x.id', 'y.created_at')
-        ->distinct()
-        ->joinSub(DB::table('attendances as a')
-                ->select('a.id', 'a.created_at', DB::raw("MIN(DATE_PART('day', a.created_at::timestamp - b.created_at::timestamp)) AS date_diff"))
-                ->join('attendances as b', function($join) {
-                    $join->on('a.id', '!=', 'b.id')
-                         ->whereRaw("DATE_PART('day', a.created_at::timestamp - b.created_at::timestamp) > 0");
-                })
-                ->where('a.user_id', $user_id)
-                ->groupBy('a.id'),
-            'y','x.id','=','y.id')
-        ->where('x.user_id', $user_id)
-        ->where('y.date_diff', '!=', 1)
-        ->groupBy('x.id', 'y.created_at', 'y.date_diff')
-        ->orderByDesc('y.created_at')
-        ->limit(1)
-        ->first();
+            ->select('x.id', 'x.created_at', DB::raw("DATE_PART('day', x.created_at::timestamp - y.created_at::timestamp) AS date_diff"))
+            ->join('attendances as y', function ($join) {
+                $join->on('x.user_id', '=', 'y.user_id')
+                    ->whereRaw('x.created_at > y.created_at');
+            })
+            ->where('x.user_id', $user_id)
+            ->groupBy('x.id', 'x.created_at', 'y.created_at')
+            ->havingRaw('MAX(DATE_PART(\'day\', x.created_at::timestamp - y.created_at::timestamp)) != 1')
+            ->orderByDesc('x.created_at')
+            ->limit(1)
+            ->first();
         if($start_of_last_login_streak) {
             $current_streak = Attendance::where('user_id', $user_id)
                 ->whereDate('created_at', '>=', $start_of_last_login_streak->created_at)
