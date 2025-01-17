@@ -153,6 +153,7 @@ class UserController extends Controller
         $age_group_7 = User::where('age_group', '70 years and above')->count();;
         $top_countries = User::select('country', DB::raw('COUNT(*) as user_count'))
             ->where('is_admin', false)
+            ->whereNotNull('country')
             ->groupBy('country')
             ->orderByDesc('user_count')
             ->limit(10)
