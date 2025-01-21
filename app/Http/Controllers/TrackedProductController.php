@@ -14,6 +14,7 @@ use App\Models\Badge;
 use App\Models\BadgeUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use App\Models\Currency;
 use Exception;
 
 class TrackedProductController extends Controller
@@ -86,6 +87,8 @@ class TrackedProductController extends Controller
         $single_product = $request->product_id;
         // $products = $request->folders;
         $user = User::find(Auth::id());
+        $currency = Currency::where('country_name', $user->country)->first();
+        $currency = $currency->symbol;
         try {
             if($user) {
                 if($products)
@@ -103,7 +106,7 @@ class TrackedProductController extends Controller
                             "merchant" => $product["merchant"],
                             "original_price" => $product["original_price"],
                             "latest_price" => $product["latest_price"],
-                            'currency' => $product["currency"],
+                            'currency' => $currency,
                             'country' => $user->country,
                             'description' => $product["description"] ?? null,
                             'link' => $product["link"] ?? null
@@ -163,7 +166,7 @@ class TrackedProductController extends Controller
                                 'image' => $request->image,
                                 'original_price' => $request->original_price,
                                 'latest_price' => $request->latest_price,
-                                'currency' => $request->currency,
+                                'currency' => $currency,
                                 'country' => $user->country,
                                 'description' => $request->description ?? null,
                                 'link' => $request->link ?? null
