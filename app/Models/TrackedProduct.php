@@ -148,7 +148,6 @@ class TrackedProduct extends Model
             ) = ?
         ", [$input_country])
         ->first();
-        return $currency;
         $current_savings_str = $currency->symbol.(float)$total_saved_value;
         $total_saved_value = $total_saved_value == null ? 0.00 : $total_saved_value;
         $equivalent_savings_badge = Badge::where('type', 'savings')
