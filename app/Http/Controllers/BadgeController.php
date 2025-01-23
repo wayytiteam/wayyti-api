@@ -18,6 +18,7 @@ class BadgeController extends Controller
     {
         $user = User::find(Auth::id());
         $currency = Currency::where('country_name', $user->country)->first();
+        dd($currency);
         $badges = Badge::where('type', $request->badge_type)
             ->orderBy('requirement_value', 'asc')
             ->paginate(20);
