@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\MonthlyDrawWinnerNotificationSent;
 use App\Models\MonthlyDrawWinner;
 use App\Models\Notification;
 use Exception;
@@ -12,6 +13,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class MonthlyDrawWinnerController extends Controller
 {
@@ -30,6 +32,19 @@ class MonthlyDrawWinnerController extends Controller
         return response()->json($winners, 200);
     }
 
+    public function show(MonthlyDrawWinner $monthly_draw_winner, Request $request) {
+        $monthly_draw_winner = $monthly_draw_winner->load('user');
+        $winner = $monthly_draw_winner['user'];
+        $subject = 'Congratulations, '.$winner['username'].'!'. ' You’re Wayyti’s Monthly Draw Winner!';
+        // return $winner['email'];
+        // dd($winner['username']);
+        if($request->notify) {
+            //Send email here
+            Mail::to($winner['email'])->send(new MonthlyDrawWinnerNotificationSent($winner['username'], $subject));
+        }
+        return $monthly_draw_winner->load('user');
+    }
+
 
     public function store()
     {
@@ -37,8 +52,9 @@ class MonthlyDrawWinnerController extends Controller
         $last_month_name = $last_month->monthName;
         $last_month_int = $last_month->month;
         $first_week = Carbon::now()->startOfMonth()->addDays(7);
+        $entries = User::whereHas('monthly_draws')->get();
         try {
-            if(Carbon::now() <= $first_week) {
+            // if(Carbon::now() <= $first_week) {
                 $entries = User::whereHas('monthly_draws', function (Builder $query) use ($last_month_int) {
                     $query->whereMonth('created_at', (int)$last_month_int);
                 })
@@ -70,16 +86,22 @@ class MonthlyDrawWinnerController extends Controller
                         }
                     }
                     $get_winner = User::where('email', $winner_email)->first();
-                    MonthlyDrawWinner::create([
+                    $monthly_draw_winner = MonthlyDrawWinner::create([
                         'user_id' => $get_winner->id
+                    ]);
+                    Notification::create([
+                        'user_id' => $get_winner->id,
+                        'message' => 'You have won the monthly draw!',
+                        'type' => 'monthly_draw_won',
+                        'monthly_draw_winner_id' => $monthly_draw_winner->id
                     ]);
                     return response()->json($get_winner, 200);
                 } else {
                     throw new Exception("No Entries found for the month of ".$last_month_name, 400);
                 }
-            } else {
-                throw new Exception("Monthly draw winner for the month of ".$last_month_name." should be decided until first week of this month", 400);
-            }
+            // } else {
+            //     throw new Exception("Monthly draw winner for the month of ".$last_month_name." should be decided until first week of this month", 400);
+            // }
         } catch(\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage()

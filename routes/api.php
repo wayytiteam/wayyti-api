@@ -58,6 +58,7 @@ Route::middleware('auth:api')->group(function () {
         'tracked-products' => TrackedProductController::class,
         'attendance' => AttendanceController::class,
         'monthly-draws' => MonthlyDrawController::class,
+        'monthly-draw-winners' => MonthlyDrawWinnerController::class,
         'badges' => BadgeController::class,
         'points' => PointController::class,
         'recent-searches' => RecentSearchController::class,
