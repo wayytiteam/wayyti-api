@@ -14,7 +14,7 @@ class PointSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::where('email', 'korey08@example.com')->first();
+        $user = User::where('email', 'nicole.amoguis@kodakollectiv.com')->first();
         for ($i=0; $i < 250; $i++) {
             Point::create([
                 'user_id' => $user->id,
