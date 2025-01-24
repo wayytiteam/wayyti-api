@@ -21,12 +21,16 @@ class MonthlyDrawWinnerController extends Controller
     {
         $month = $request->query('month');
         $year = $request->query('year');
+        $status = $request->query('status');
         $winners = MonthlyDrawWinner::whereHas('user.monthly_draws')
             ->when($month, function (Builder $query) use ($month) {
                 $query->whereMonth('created_at', $month);
             })
             ->when($year, function (Builder $query) use ($year) {
                 $query->whereYear('created_at', $year);
+            })
+            ->when($status, function (Builder $query) use ($status) {
+                $query->where('has_claimed', $status);
             })
             ->with(['user.monthly_draws'])->paginate(10);
         return response()->json($winners, 200);
