@@ -54,7 +54,7 @@ class MonthlyDrawWinnerController extends Controller
         $first_week = Carbon::now()->startOfMonth()->addDays(7);
         $entries = User::whereHas('monthly_draws')->get();
         try {
-            // if(Carbon::now() <= $first_week) {
+            if(Carbon::now() <= $first_week) {
                 $entries = User::whereHas('monthly_draws', function (Builder $query) use ($last_month_int) {
                     $query->whereMonth('created_at', (int)$last_month_int);
                 })
@@ -99,9 +99,9 @@ class MonthlyDrawWinnerController extends Controller
                 } else {
                     throw new Exception("No Entries found for the month of ".$last_month_name, 400);
                 }
-            // } else {
-            //     throw new Exception("Monthly draw winner for the month of ".$last_month_name." should be decided until first week of this month", 400);
-            // }
+            } else {
+                throw new Exception("Monthly draw winner for the month of ".$last_month_name." should be decided until first week of this month", 400);
+            }
         } catch(\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage()
