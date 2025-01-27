@@ -128,14 +128,13 @@ class TrackedProduct extends Model
         $tracked_items = $get_tracked_items->distinct()
             ->sum('saved');
         $first_saving = $get_tracked_items->where('deal', true)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('updated_at', 'desc')
             ->first();
         if($first_saving) {
-            $savings_start_date = Carbon::parse($first_saving->created_at)->format('m/d/Y');
+            $savings_start_date = Carbon::parse($first_saving->updated_at)->format('m/d/Y');
         } else {
             $savings_start_date = null;
         }
-
         $total_saved_value = $tracked_items;
         $input_country = collect(explode(' ', strtolower($user->country)))
         ->sort()
