@@ -23,7 +23,8 @@ class GoogleProduct extends Model
         'currency',
         'country',
         'description',
-        'link'
+        'link',
+        'job_id'
     ];
 
 

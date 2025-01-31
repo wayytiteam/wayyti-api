@@ -50,17 +50,17 @@ class MonthlyDrawWinnerController extends Controller
     }
 
 
-    public function store()
+    public function store(Request $request)
     {
         $last_month = Carbon::now()->subDays(30);
         $last_month_name = $last_month->monthName;
-        $last_month_int = $last_month->month;
-        $first_week = Carbon::now()->startOfMonth()->addDays(7);
+        // $first_week = Carbon::now()->startOfMonth()->addDays(7);
         $entries = User::whereHas('monthly_draws')->get();
         try {
             // if(Carbon::now() <= $first_week) {
-                $entries = User::whereHas('monthly_draws', function (Builder $query) use ($last_month_int) {
-                    $query->whereMonth('created_at', (int)$last_month_int);
+                $entries = User::whereHas('monthly_draws', function (Builder $query) use ($request) {
+                    $query->whereMonth('created_at', (int)$request->month)
+                        ->whereYear('created_at', (int)$request->year);
                 })
                     ->with('monthly_draws')
                     ->get();

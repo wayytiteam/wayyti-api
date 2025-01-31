@@ -42,9 +42,11 @@ class SubscriptionController extends Controller
     {
         $user = User::find($request->user_id);
         try {
-            $new_subscription = Subscription::create([
+            $new_subscription = Subscription::updateOrCreate([
                 'user_id' => $user->id,
-                'type' => $request->type,
+            ], [
+                'user_id' => $user->id,
+                'type' => $request->type
             ]);
             return response()->json($new_subscription, 200);
         } catch (\Exception $e) {
