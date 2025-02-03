@@ -53,4 +53,12 @@ class MonthlyDrawWinnerNotificationSent extends Mailable
     {
         return [];
     }
+
+    public function build()
+    {
+        return $this->view('mail.monthly_draw_winner_notification_sent')
+            ->with([
+                'name' => $this->name
+            ]);
+    }
 }
