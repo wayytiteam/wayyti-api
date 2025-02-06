@@ -36,6 +36,11 @@ class MonthlyDraw extends Model
             ->where('points_equivalent', '>', (int)$current_total_points)
             ->orderBy('requirement_value', 'asc')
             ->first();
+        if(!$next_draw_entry) {
+            $next_draw_entry = Badge::where('type', 'monthly-draw')
+                ->orderBy('points_equivalent', 'desc')
+                ->first();
+        }
         $monthly_draw = array(
             'accumulated_points' => (int)$current_total_points,
             'next_draw_entry' => $next_draw_entry,
