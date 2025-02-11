@@ -14,7 +14,8 @@ class RecentSearch extends Model
     public $timestamps = true;
     protected $fillable = [
         'user_id',
-        'keyword'
+        'keyword',
+        'job_id'
     ];
 
     public function user(): BelongsTo

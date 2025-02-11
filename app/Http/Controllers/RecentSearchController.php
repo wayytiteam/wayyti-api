@@ -47,7 +47,8 @@ class RecentSearchController extends Controller
             } else {
                 RecentSearch::create([
                     'user_id' => $user->id,
-                    'keyword' => $request->keyword
+                    'keyword' => $request->keyword,
+                    'job_id'  => $request->job_id
                 ]);
             }
             return response()->json(null, 200);
