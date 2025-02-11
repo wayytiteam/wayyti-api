@@ -32,12 +32,12 @@ class UserController extends Controller
             })
             ->when($status === 'active', function (Builder $query) {
                 $query->whereHas('attendances', function ($subQuery) {
-                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()]);
+                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()]);
                 });
             })
             ->when($status === 'inactive', function (Builder $query) {
                 $query->whereDoesntHave('attendances', function ($subQuery) {
-                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()]);
+                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()]);
                 });
             })
             ->paginate(10);

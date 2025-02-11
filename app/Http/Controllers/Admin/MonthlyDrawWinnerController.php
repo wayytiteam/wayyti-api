@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\MonthlyDrawWinnerNotificationSent;
+use App\Mail\MonthlyDrawWinnerReminderSent;
 use App\Models\MonthlyDrawWinner;
 use App\Models\Notification;
 use Exception;
@@ -40,11 +41,8 @@ class MonthlyDrawWinnerController extends Controller
         $monthly_draw_winner = $monthly_draw_winner->load('user');
         $winner = $monthly_draw_winner['user'];
         $subject = 'Congratulations, '.$winner['username'].'!'. ' You’re Wayyti’s Monthly Draw Winner!';
-        // return $winner['email'];
-        // dd($winner['username']);
         if($request->notify) {
-            //Send email here
-            Mail::to($winner['email'])->send(new MonthlyDrawWinnerNotificationSent($winner['username'], $subject));
+            Mail::to($winner['email'])->send(new MonthlyDrawWinnerReminderSent($winner['username'], $subject));
         }
         return $monthly_draw_winner->load('user');
     }
@@ -99,6 +97,8 @@ class MonthlyDrawWinnerController extends Controller
                         'type' => 'monthly_draw_won',
                         'monthly_draw_winner_id' => $monthly_draw_winner->id
                     ]);
+                    $subject = 'Congratulations, '.$winner_email.'!'. ' You’re Wayyti’s Monthly Draw Winner!';
+                    Mail::to($winner_email)->send(new MonthlyDrawWinnerNotificationSent($winner_email, $subject));
                     return response()->json($get_winner, 200);
                 } else {
                     throw new Exception("No Entries found for the month of ".$last_month_name, 400);

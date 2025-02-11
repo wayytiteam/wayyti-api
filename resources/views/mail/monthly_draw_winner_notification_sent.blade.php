@@ -5,13 +5,6 @@ We’re excited to share some great news—you’ve been selected as the winner 
 You’ve won an AUD $50 gift card!
 <br>
 To claim your prize:
-{{-- <br>
-1. Log into the Wayyti app.
-<br>
-2. Follow the instructions in your notification.
-<br>
-3. Select your preferred gift card type.
-<br> --}}
 <ol>
 <li>
     <strong>Log into the Wayyti app.</strong>

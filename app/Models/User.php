@@ -126,7 +126,7 @@ class User extends Authenticatable
     public function getStatusAttribute()
     {
         $has_recent_attendance = $this->attendances()
-            ->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()])
+            ->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()])
             ->exists();
 
         return $has_recent_attendance ? 'active' : 'inactive';
