@@ -122,11 +122,6 @@ class ProductController extends Controller
         $url = "https://realtime.oxylabs.io/v1/queries";
 
         $params = array(
-            // 'source' => 'google_shopping_search',
-            // 'domain' => 'com',
-            // 'url' => $request->query('url'),
-            // 'query' => $request->query('keyword'),
-            // 'geo_location' => $request->query('geo_location'),
             'source' => 'google_shopping_search',
             'domain' => $request->query('domain'),
             'query' => $request->query('keyword'),

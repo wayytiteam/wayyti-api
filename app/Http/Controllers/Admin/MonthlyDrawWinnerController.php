@@ -39,10 +39,16 @@ class MonthlyDrawWinnerController extends Controller
 
     public function show(MonthlyDrawWinner $monthly_draw_winner, Request $request) {
         $monthly_draw_winner = $monthly_draw_winner->load('user');
-        $winner = $monthly_draw_winner['user'];
-        $subject = 'Congratulations, '.$winner['username'].'!'. ' You’re Wayyti’s Monthly Draw Winner!';
         if($request->notify) {
+            $winner = $monthly_draw_winner['user'];
+            $subject = 'Congratulations, '.$winner['username'].'!'. ' You’re Wayyti’s Monthly Draw Winner!';
             Mail::to($winner['email'])->send(new MonthlyDrawWinnerReminderSent($winner['username'], $subject));
+            Notification::create([
+                'user_id' => $winner->id,
+                'message' => 'Reminder: You won the monthly draw! Select your gift card in the Wayyti app within 14 days to claim it.',
+                'type' => 'monthly_draw_prize_reminder',
+                'monthly_draw_winner_id' => $monthly_draw_winner->id
+            ]);
         }
         return $monthly_draw_winner->load('user');
     }
