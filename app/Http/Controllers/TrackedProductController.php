@@ -342,21 +342,6 @@ class TrackedProductController extends Controller
         $tracked_products = $request->tracked_products;
         $folders = $request->folders;
         try{
-            // foreach($folders as $folder) {
-            //     foreach($tracked_products as $tracked_product) {
-            //         $this_product = TrackedProduct::find($tracked_product);
-            //         $is_duplicated = TrackedProduct::where('folder_id', $folder)
-            //             ->where('google_product_id', $this_product->google_product_id)
-            //             ->first();
-            //         if(!$is_duplicated) {
-            //             TrackedProduct::create([
-            //                 'user_id' => $user->id,
-            //                 'folder_id' => $folder,
-            //                 'google_product_id' => $this_product->google_product_id,
-            //             ]);
-            //         }
-            //     }
-            // }
             foreach($tracked_products as $tracked_product) {
                 $this_product = TrackedProduct::find($tracked_product);
                 foreach($folders as $folder) {
