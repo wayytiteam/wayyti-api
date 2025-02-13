@@ -221,7 +221,7 @@ class TrackedProductController extends Controller
             if($google_product) {
                 $tracked_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $google_product->id)
-                    ->with('google_product')
+                    ->with('google_product', 'google_product.folders')
                     ->first();
                 if($tracked_product) {
                     return response()->json($tracked_product, 200);
