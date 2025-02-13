@@ -15,6 +15,7 @@ use App\Models\BadgeUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use App\Models\Currency;
+use App\Models\Folder;
 use Exception;
 
 class TrackedProductController extends Controller
@@ -251,7 +252,7 @@ class TrackedProductController extends Controller
     public function update(Request $request, TrackedProduct $tracked_product)
     {
         $user = User::find(Auth::id());
-        // try {
+        try {
             foreach ($request->all() as $key => $value) {
                 if (array_key_exists($key, $tracked_product->getAttributes())) {
                     $tracked_product->$key = $value;
@@ -329,11 +330,35 @@ class TrackedProductController extends Controller
             $tracked_product->load('google_product');
 
             return response()->json($tracked_product, 200);
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'error' => $e->getMessage()
-        //     ], 400);
-        // }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function batch_update(Request $request) {
+        $tracked_products = $request->tracked_products;
+        $folders = $request->folders;
+        try{
+            foreach($folders as $folder) {
+                foreach($tracked_products as $tracked_product) {
+                     $this_product = TrackedProduct::find($tracked_product);
+                     $is_duplicated = TrackedProduct::where('folder_id', $folder)
+                        ->where('google_product_id', $this_product->google_product_id)
+                        ->first();
+                     if(!$is_duplicated) {
+                         $this_product->folder_id = $folder;
+                         $this_product->save();
+                     }
+                }
+             }
+             return response('',200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**

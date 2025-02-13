@@ -48,8 +48,9 @@ Route::resource('personas', PersonaController::class);
 Route::middleware('auth:api')->group(function () {
     Route::post('users/check-password', [UserController::class, 'check_password']);
     Route::post('users/welcome-email', [UserController::class, 'welcome_email']);
-    // Route::resource('subscriptions', SubscriptionController::class)->only(['store']);
+    Route::resource('subscriptions', SubscriptionController::class)->only(['store']);
     Route::get('tracked-products/google-product-details', [TrackedProductController::class, 'google_product_details']);
+    Route::post('tracked-products/batch-update', [TrackedProductController::class, 'batch_update']);
     Route::apiResources([
         'users' => UserController::class,
         'google-products' => GoogleProductController::class,
@@ -58,7 +59,7 @@ Route::middleware('auth:api')->group(function () {
         'tracked-products' => TrackedProductController::class,
         'attendance' => AttendanceController::class,
         'monthly-draws' => MonthlyDrawController::class,
-        'monthly-draw-winners' => MonthlyDrawWinnerController::class,
+        // 'monthly-draw-winners' => MonthlyDrawWinnerController::class,
         'badges' => BadgeController::class,
         'points' => PointController::class,
         'recent-searches' => RecentSearchController::class,
@@ -74,7 +75,6 @@ Route::middleware('auth:api')->group(function () {
 
 Route::middleware(['auth:api', 'scope:admin'])->group(function () {
     Route::get('admin/users/report', [AdminUserController::class, 'report']);
-    Route::resource('admin/subscriptions', SubscriptionController::class)->only(['index']);
     Route::apiResources([
         'admin/monthly-draw-winners' => AdminMonthlyDrawWinnerController::class,
         'admin/users' => AdminUserController::class,

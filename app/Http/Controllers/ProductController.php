@@ -128,10 +128,6 @@ class ProductController extends Controller
             'geo_location' => $request->query('geo_location'),
             'pages' => 2,
             'parse' => true,
-            'context' => [
-                ['key' => 'sort_by', 'value' => 'pd'],
-                ['key' => 'min_price', 'value' => 20]
-            ]
         );
 
         $ch = curl_init();
