@@ -347,7 +347,7 @@ class TrackedProductController extends Controller
         $folders = $request->folders;
         try{
             foreach($tracked_products as $tracked_product) {
-                $this_product = TrackedProduct::find($tracked_product);
+                $this_product = TrackedProduct::where('id', $tracked_product)->with('folder')->first();
                 if(count($folders) == 0) {
                     $this_product->folder_id = null;
                     $this_product->save();
@@ -365,7 +365,9 @@ class TrackedProductController extends Controller
                         }
                     }
                 }
-                $this_product->delete();
+                if(!in_array($this_product->folder_id, $folders)){
+                    $this_product->delete();
+                }
             }
             return response('',200);
         } catch (\Exception $e) {
