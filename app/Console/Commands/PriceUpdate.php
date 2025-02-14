@@ -91,6 +91,9 @@ class PriceUpdate extends Command
                                     'type' => 'price_down',
                                     'country' => $user["country"]
                                 ]);
+                                $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                $tracked_product->saved = $initial_saving;
+                                $tracked_product->save();
                                 if($user->fcm_token) {
                                     Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                                 }
