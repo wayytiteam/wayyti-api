@@ -169,12 +169,11 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('facebook_id', $facebook_id)->first();
-         $user->load('personas');
          if($user){
             $token = $user->createToken('Facebook Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
-                'user' => $user
+                'user' => $user->load('personas')
             ]);
             } else {
                 if($email) {
@@ -191,7 +190,7 @@ class UserController extends Controller
 
                         return response()->json([
                             'token' => $token,
-                            'user' => $user
+                            'user' => $user->load('personas')
                         ]);
                     }
                 } else {
@@ -202,10 +201,9 @@ class UserController extends Controller
                         'email_verified_at' => Carbon::parse(now())
                     ]);
                     $token = $user->createToken('Facebook Authentication')->accessToken;
-                    $user->load('personas');
                     return response()->json([
                         'token' => $token,
-                        'user' => $user
+                        'user' => $user->load('personas')
                     ]);
                 }
             }
@@ -253,12 +251,11 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('ios_id', $ios_id)->first();
-         $user->load('personas');
          if($user){
             $token = $user->createToken('Apple Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
-                'user' => $user
+                'user' => $user->load('personas')
             ]);
             } else {
                 if($email) {
@@ -274,7 +271,7 @@ class UserController extends Controller
                         $token = $user->createToken('Apple Authentication')->accessToken;
                         return response()->json([
                             'token' => $token,
-                            'user' => $user
+                            'user' => $user->load('personas')
                         ]);
                     }
                 } else {
@@ -287,7 +284,7 @@ class UserController extends Controller
                     $token = $user->createToken('Apple Authentication')->accessToken;
                     return response()->json([
                         'token' => $token,
-                        'user' => $user
+                        'user' => $user->load('personas')
                     ]);
                 }
             }
