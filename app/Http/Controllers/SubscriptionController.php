@@ -6,6 +6,9 @@ use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Google\Service\AndroidPublisher;
+use Google\Client;
 
 class SubscriptionController extends Controller
 {
@@ -89,5 +92,25 @@ class SubscriptionController extends Controller
     public function destroy(Subscription $subscriptions)
     {
         //
+    }
+
+    public function verify_subscription(Request $request) {
+        $client = new Client();
+        $bucket_file = 'google-play-service-key.json';
+        $local_file_path = storage_path('google-play-service-key.json');
+        // dd($local_file_path);
+        $file_content = Storage::disk('s3')->get($bucket_file);
+        file_put_contents($local_file_path, $file_content);
+        $client->setAuthConfig($local_file_path);
+        // $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
+        $client->addScope('https://www.googleapis.com/auth/androidpublisher');
+        $service = new AndroidPublisher($client);
+        try {
+            $subscription = $service->purchases_subscriptions->get($request->package_name, $request->product_id, $request->purchase_token);
+            // return $subscription->paymentState;
+            dd($subscription);
+        } catch (\Exception $e) {
+            return $e;
+        }
     }
 }
