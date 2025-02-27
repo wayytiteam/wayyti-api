@@ -17,17 +17,19 @@ class SubscriptionController extends Controller
      */
     public function index(Request $request)
     {
-        $type = $request->query('type');
-        $status = $request->query('status');
-        $subscriptions = Subscription::query();
-        $subscriptions = $subscriptions->when($type, function (Builder $query) use ($type) {
-            $query->where('type', $type);
-        })->when($status, function (Builder $query) use ($status) {
-            $query->where('status', $status);
-        })->with('user')
-        ->paginate(10);
+        // $type = $request->query('type');
+        // $status = $request->query('status');
+        // $subscriptions = Subscription::query();
+        // $subscriptions = $subscriptions->when($type, function (Builder $query) use ($type) {
+        //     $query->where('type', $type);
+        // })->when($status, function (Builder $query) use ($status) {
+        //     $query->where('status', $status);
+        // })->with('user')
+        // ->paginate(10);
 
-        return response()->json($subscriptions, 200);
+        // return response()->json($subscriptions, 200);
+        $subscriptions = Subscription::get();
+        return $subscriptions;
     }
 
     /**
