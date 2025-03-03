@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subscription;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -66,7 +67,7 @@ class SubscriptionController extends Controller
      */
     public function show(Subscription $subscription)
     {
-        $subscription->load('user');
+        // $subscription->load('user');
         return response($subscription, 200);
     }
 
@@ -115,4 +116,19 @@ class SubscriptionController extends Controller
             return $e;
         }
     }
+
+    // public function subscription_check(){
+    //     $subscriptions = Subscription::get();
+    //     foreach($subscriptions as $subscription) {
+    //         if(!$subscription->has_subscribed){
+    //             if($subscription->on_trial_mode) {
+    //                 $trial_months_duration = Carbon::parse($subscription->updated_at)->floatDiffInMonths(Carbon::now());
+    //                 if($trial_months_duration >= 2) {
+    //                     $subscription->on_trial_mode = false;
+    //                     $subscription->save();
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }

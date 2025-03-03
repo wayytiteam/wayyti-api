@@ -13,6 +13,7 @@ use Google\Service\AndroidPublisher;
 class Subscription extends Model
 {
     use HasUuids;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'user_id',
