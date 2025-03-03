@@ -104,6 +104,12 @@ class MonthlyDrawWinnerController extends Controller
                         'monthly_draw_winner_id' => $monthly_draw_winner->id
                     ]);
                     $subject = 'Congratulations, '.$winner_email.'!'. ' You’re Wayyti’s Monthly Draw Winner!';
+                    Notification::create([
+                        'user_id' => $get_winner->id,
+                        'message' => 'You have won the monthly draw',
+                        'type' => 'monthly_draw_prize_reminder',
+                        'monthly_draw_winner_id' => $monthly_draw_winner->id
+                    ]);
                     Mail::to($winner_email)->send(new MonthlyDrawWinnerNotificationSent($winner_email, $subject));
                     return response()->json($get_winner, 200);
                 } else {
