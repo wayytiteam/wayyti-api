@@ -16,7 +16,7 @@ class PointController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = User::find(Auth::id());
         $get_points = Point::where('user_id', $user->id)
@@ -24,19 +24,22 @@ class PointController extends Controller
                 $query->where('country', $user->country)
                     ->orWhereNull('country');
             });
+        $get_ads_points = Point::where('user_id', $user->id)
+            ->where('ads_point', true)
+            ->sum('points');
         $over_all_points = $get_points->sum('points');
         $rank_equivalent = Badge::where('type', 'rank')
             ->where('points_equivalent', '<=', (int)$over_all_points)
             ->orderBy('points_equivalent', 'desc')
             ->first();
-        if($rank_equivalent) {
+        if ($rank_equivalent) {
             $current_rank = BadgeUser::where('user_id', $user->id)
                 ->whereHas('badge', function (Builder $query) {
                     $query->where('type', 'rank');
                 })
                 ->first();
-            if($current_rank) {
-                if($current_rank->badge_id !== $rank_equivalent->id){
+            if ($current_rank) {
+                if ($current_rank->badge_id !== $rank_equivalent->id) {
                     $current_rank->badge_id = $rank_equivalent->id;
                     $current_rank->save();
                     $rank_equivalent = $current_rank->badge;
@@ -51,7 +54,8 @@ class PointController extends Controller
         }
         $accumulated_points = array(
             'total_points' => (int)$over_all_points,
-            'current_rank' => $rank_equivalent
+            'current_rank' => $rank_equivalent,
+            'ads_points' => (int)$get_ads_points
         );
 
         return response()->json([
@@ -76,7 +80,8 @@ class PointController extends Controller
         $add_points = $request->points;
         $points_added = Point::create([
             'user_id' => $user->id,
-            'points' => $request->points
+            'points' => $request->points,
+            'ads_point' => $request->type === 'advertisement' ? true : false
         ]);
 
         return response()->json($points_added, 200);

@@ -17,6 +17,7 @@ class Point extends Model
         'tracked_product_id',
         'google_product_id',
         'referral_id',
-        'country'
+        'country',
+        'ads_point'
     ];
 }
