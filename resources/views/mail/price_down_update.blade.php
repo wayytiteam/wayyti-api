@@ -13,4 +13,3 @@ Was: {{ $old_price }}
 
 Price Dropped by: <span style="color: green;">{{ $percentage }}%</span>
 </x-mail::message>
-w
