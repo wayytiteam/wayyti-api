@@ -20,7 +20,7 @@ class MonthlyDrawController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $monthly_draw = MonthlyDraw::get_monthly_draw_status($user->id);
+        $monthly_draw = MonthlyDraw::get_monthly_draw_status($user);
         return response()->json($monthly_draw, 200);
     }
 

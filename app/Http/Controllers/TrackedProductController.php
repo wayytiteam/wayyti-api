@@ -14,6 +14,7 @@ use App\Models\Badge;
 use App\Models\BadgeUser;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use App\Models\Currency;
 use Exception;
 
 class TrackedProductController extends Controller
@@ -86,6 +87,8 @@ class TrackedProductController extends Controller
         $single_product = $request->product_id;
         // $products = $request->folders;
         $user = User::find(Auth::id());
+        $currency = Currency::where('country_name', $user->country)->first();
+        $currency = $currency->symbol;
         try {
             if($user) {
                 if($products)
@@ -103,7 +106,7 @@ class TrackedProductController extends Controller
                             "merchant" => $product["merchant"],
                             "original_price" => $product["original_price"],
                             "latest_price" => $product["latest_price"],
-                            'currency' => $product["currency"],
+                            'currency' => $currency,
                             'country' => $user->country,
                             'description' => $product["description"] ?? null,
                             'link' => $product["link"] ?? null
@@ -163,7 +166,7 @@ class TrackedProductController extends Controller
                                 'image' => $request->image,
                                 'original_price' => $request->original_price,
                                 'latest_price' => $request->latest_price,
-                                'currency' => $request->currency,
+                                'currency' => $currency,
                                 'country' => $user->country,
                                 'description' => $request->description ?? null,
                                 'link' => $request->link ?? null
@@ -217,7 +220,7 @@ class TrackedProductController extends Controller
             if($google_product) {
                 $tracked_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $google_product->id)
-                    ->with('google_product')
+                    ->with('google_product', 'google_product.folders')
                     ->first();
                 if($tracked_product) {
                     return response()->json($tracked_product, 200);
@@ -248,7 +251,7 @@ class TrackedProductController extends Controller
     public function update(Request $request, TrackedProduct $tracked_product)
     {
         $user = User::find(Auth::id());
-        // try {
+        try {
             foreach ($request->all() as $key => $value) {
                 if (array_key_exists($key, $tracked_product->getAttributes())) {
                     $tracked_product->$key = $value;
@@ -256,8 +259,12 @@ class TrackedProductController extends Controller
             }
             if($request->deal) {
                 $product_detail = GoogleProduct::find($tracked_product->google_product_id);
-                $saved_value = ((float)$product_detail->original_price - (float)$product_detail->latest_price) * (float)$request->quantity;
-                // $saved_value = $saved_value < 0 ? $saved_value = 0 : $saved_value = $saved_value;
+                $quantity = $request->quantity - 1;
+                if($quantity != 0) {
+                    $saved_value = ((float)$product_detail->original_price - (float)$product_detail->latest_price) * (float)$request->quantity;
+                } else {
+                    $saved_value = $tracked_product->saved;
+                }
                 $saved_value = number_format($saved_value, 2);
                 $tracked_google_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $tracked_product->google_product_id)
@@ -326,11 +333,47 @@ class TrackedProductController extends Controller
             $tracked_product->load('google_product');
 
             return response()->json($tracked_product, 200);
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'error' => $e->getMessage()
-        //     ], 400);
-        // }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function batch_update(Request $request) {
+        $user = User::find(Auth::id());
+        $tracked_products = $request->tracked_products;
+        $folders = $request->folders;
+        try{
+            foreach($tracked_products as $tracked_product) {
+                $this_product = TrackedProduct::where('id', $tracked_product)->with('folder')->first();
+                if(count($folders) == 0) {
+                    $this_product->folder_id = null;
+                    $this_product->save();
+                } else {
+                    foreach($folders as $folder) {
+                        $is_duplicated = TrackedProduct::where('folder_id', $folder)
+                            ->where('google_product_id', $this_product->google_product_id)
+                            ->first();
+                        if(!$is_duplicated) {
+                            TrackedProduct::create([
+                                'user_id' => $user->id,
+                                'folder_id' => $folder,
+                                'google_product_id' => $this_product->google_product_id,
+                            ]);
+                        }
+                    }
+                }
+                if(!in_array($this_product->folder_id, $folders)){
+                    $this_product->delete();
+                }
+            }
+            return response('',200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**

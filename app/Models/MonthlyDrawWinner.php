@@ -13,8 +13,19 @@ class MonthlyDrawWinner extends Model
     use HasFactory, HasUuids;
 
     protected $fillable = [
-        'user_id'
+        'user_id',
+        'has_claimed',
+        'email',
+        'country',
+        'gift_card'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'has_claimed' => 'boolean'
+        ];
+    }
 
     public function notification(): HasOne
     {

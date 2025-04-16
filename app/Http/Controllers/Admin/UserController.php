@@ -32,12 +32,12 @@ class UserController extends Controller
             })
             ->when($status === 'active', function (Builder $query) {
                 $query->whereHas('attendances', function ($subQuery) {
-                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()]);
+                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()]);
                 });
             })
             ->when($status === 'inactive', function (Builder $query) {
                 $query->whereDoesntHave('attendances', function ($subQuery) {
-                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(7), Carbon::now()]);
+                    $subQuery->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()]);
                 });
             })
             ->paginate(10);
@@ -144,24 +144,29 @@ class UserController extends Controller
     }
 
     public function report() {
-        $age_group_1 = User::where('age_group', '13 to 17 years')->count();
-        $age_group_2 = User::where('age_group', '18 to 29 years')->count();
-        $age_group_3 = User::where('age_group', '30 to 49 years')->count();
-        $age_group_4 = User::where('age_group', '50 to 64 years')->count();
-        $age_group_5 = User::where('age_group', '65 years and above')->count();
+        $age_group_1 = User::where('age_group', '16 to 19 years')->count();
+        $age_group_2 = User::where('age_group', '20 to 29 years')->count();
+        $age_group_3 = User::where('age_group', '30 to 39 years')->count();
+        $age_group_4 = User::where('age_group', '40 to 49 years')->count();
+        $age_group_5 = User::where('age_group', '50 to 59 years')->count();
+        $age_group_6 = User::where('age_group', '60 to 69 years')->count();
+        $age_group_7 = User::where('age_group', '70 years and above')->count();;
         $top_countries = User::select('country', DB::raw('COUNT(*) as user_count'))
             ->where('is_admin', false)
+            ->whereNotNull('country')
             ->groupBy('country')
             ->orderByDesc('user_count')
             ->limit(10)
             ->get();
         $report = array(
             'age_groups' => [
-                '13_to_17_years' => $age_group_1,
-                '18_to_29_years' => $age_group_2,
-                '30_to_49_years' => $age_group_3,
-                '50_to_64_years' => $age_group_4,
-                '65_years_and_above' => $age_group_5
+                '16_to_19_years' => $age_group_1,
+                '20_to_29_years' => $age_group_2,
+                '30_to_39_years' => $age_group_3,
+                '40_to_49_years' => $age_group_4,
+                '50_to_59_years' => $age_group_5,
+                '60_to_69_years' => $age_group_6,
+                '70_years_and_above' => $age_group_7
             ],
             'top_countries' => $top_countries
         );

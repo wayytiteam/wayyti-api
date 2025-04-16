@@ -14,11 +14,10 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 use App\Mail\OTPSent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
-use Firebase\JWT\JWT;
-use Illuminate\Support\Facades\Http;
 // use Laravel\Socialite\Two\User as OauthUser;
 // use PhpParser\Node\Expr\Throw_;
 
@@ -150,11 +149,10 @@ class UserController extends Controller
             } else {
                 $token = $user->createToken('Email Sign-in', ['user'])->accessToken;
             }
-            $user->load('personas');
             return response()->json([
                 "message" => "Signed-in successfully",
                 "token" => $token,
-                "user" => $user
+                "user" => $user->load(['personas', 'recent_searches', 'subscription'])
             ], 200);
         } else {
             return response()->json([
@@ -169,12 +167,11 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('facebook_id', $facebook_id)->first();
-         $user->load('personas');
          if($user){
             $token = $user->createToken('Facebook Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
-                'user' => $user
+                'user' => $user->load(['personas', 'recent_searches', 'subscription'])
             ]);
             } else {
                 if($email) {
@@ -191,7 +188,7 @@ class UserController extends Controller
 
                         return response()->json([
                             'token' => $token,
-                            'user' => $user
+                            'user' => $user->load(['personas', 'recent_searches', 'subscription'])
                         ]);
                     }
                 } else {
@@ -202,10 +199,9 @@ class UserController extends Controller
                         'email_verified_at' => Carbon::parse(now())
                     ]);
                     $token = $user->createToken('Facebook Authentication')->accessToken;
-                    $user->load('personas');
                     return response()->json([
                         'token' => $token,
-                        'user' => $user
+                        'user' => $user->load(['personas', 'recent_searches', 'subscription'])
                     ]);
                 }
             }
@@ -253,12 +249,11 @@ class UserController extends Controller
         $email = $request->email;
         try {
          $user = User::where('ios_id', $ios_id)->first();
-         $user->load('personas');
          if($user){
             $token = $user->createToken('Apple Authentication')->accessToken;
             return response()->json([
                 'token' => $token,
-                'user' => $user
+                'user' => $user->load('personas')
             ]);
             } else {
                 if($email) {
@@ -274,7 +269,7 @@ class UserController extends Controller
                         $token = $user->createToken('Apple Authentication')->accessToken;
                         return response()->json([
                             'token' => $token,
-                            'user' => $user
+                            'user' => $user->load('personas')
                         ]);
                     }
                 } else {
@@ -287,7 +282,7 @@ class UserController extends Controller
                     $token = $user->createToken('Apple Authentication')->accessToken;
                     return response()->json([
                         'token' => $token,
-                        'user' => $user
+                        'user' => $user->load('personas')
                     ]);
                 }
             }

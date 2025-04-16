@@ -15,7 +15,7 @@ class BannerController extends Controller
     public function index(Request $request)
     {
         $banners = Banner::where('active', true)
-            ->orderBy('created_at', 'desc',)
+            ->orderBy('updated_at', 'desc',)
             ->limit(4);
         $banners = $banners->paginate(10);
 

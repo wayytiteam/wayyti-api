@@ -56,7 +56,7 @@ class FolderController extends Controller
      */
     public function show(Folder $folder)
     {
-        $folder->load('tracked_products');
+        $folder->load('tracked_products', 'tracked_products.google_product');
 
         return response()->json($folder, 200);
     }

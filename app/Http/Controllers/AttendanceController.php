@@ -23,7 +23,7 @@ class AttendanceController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
-        $user_id = $user->id;
+        // $user_id = $user->id;
         $login_streak = Attendance::get_login_badge($user->id);
         return response()->json($login_streak, 200);
     }
@@ -43,6 +43,9 @@ class AttendanceController extends Controller
     {
         $now = Carbon::now();
         $user = User::find($request->user_id);
+        // $current_streak = Attendance::where('user_id', $user->id)
+        // ->count();
+        // return $current_streak;
         $attendance = Attendance::where('user_id', $user->id)
             ->whereDate('created_at', $now)
             ->first();
@@ -52,23 +55,17 @@ class AttendanceController extends Controller
             ]);
         }
         $start_of_last_login_streak = DB::table('attendances as x')
-        ->select('x.id', 'y.created_at')
-        ->distinct()
-        ->joinSub(DB::table('attendances as a')
-                ->select('a.id', 'a.created_at', DB::raw("MIN(DATE_PART('day', a.created_at::timestamp - b.created_at::timestamp)) AS date_diff"))
-                ->join('attendances as b', function($join) {
-                    $join->on('a.id', '!=', 'b.id')
-                         ->whereRaw("DATE_PART('day', a.created_at::timestamp - b.created_at::timestamp) > 0");
-                })
-                ->where('a.user_id', $user->id)
-                ->groupBy('a.id'),
-            'y','x.id','=','y.id')
-        ->where('x.user_id', $user->id)
-        ->where('y.date_diff', '!=', 1)
-        ->groupBy('x.id', 'y.created_at', 'y.date_diff')
-        ->orderByDesc('y.created_at')
-        ->limit(1)
-        ->first();
+            ->select('x.id', 'x.created_at', DB::raw("DATE_PART('day', x.created_at::timestamp - y.created_at::timestamp) AS date_diff"))
+            ->join('attendances as y', function ($join) {
+                $join->on('x.user_id', '=', 'y.user_id')
+                    ->whereRaw('x.created_at > y.created_at');
+            })
+            ->where('x.user_id', $user->id)
+            ->groupBy('x.id', 'x.created_at', 'y.created_at')
+            ->havingRaw('MAX(DATE_PART(\'day\', x.created_at::timestamp - y.created_at::timestamp)) != 1')
+            ->orderByDesc('x.created_at')
+            ->limit(1)
+            ->first();
         if($start_of_last_login_streak) {
             $current_streak = Attendance::where('user_id', $user->id)
                 ->whereDate('created_at', '>=', $start_of_last_login_streak->created_at)
@@ -76,7 +73,9 @@ class AttendanceController extends Controller
         } else {
             $current_streak = Attendance::where('user_id', $user->id)
                 ->count();
+            // $current_streak = 1;
         }
+        // return $current_streak;
         $login_badge_acquired = Badge::where('type', 'login')
             ->where('requirement_value', '<=', $current_streak)
             ->orderBy('requirement_value', 'desc')

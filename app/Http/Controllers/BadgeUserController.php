@@ -12,6 +12,8 @@ use App\Models\TrackedProduct;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Currency;
+use Illuminate\Support\Facades\DB;
 
 class BadgeUserController extends Controller
 {
@@ -21,6 +23,17 @@ class BadgeUserController extends Controller
     public function index()
     {
         $user = User::find(Auth::id());
+        // $input_country = collect(explode(' ', strtolower($user->country)))
+        //     ->sort()
+        //     ->implode(' ');
+        // $currency = DB::table('currencies')
+        // ->whereRaw("
+        //     (
+        //         SELECT STRING_AGG(word, ' ' ORDER BY word)
+        //         FROM unnest(string_to_array(LOWER(country_name), ' ')) word
+        //     ) = ?
+        // ", [$input_country])
+        // ->first();
         $get_recent_badges = BadgeUser::where('user_id', $user->id)
             ->orderBy('updated_at', 'desc')
             ->limit(3)

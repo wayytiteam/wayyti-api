@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Rinvex\Country\CountryLoader;
 
@@ -127,16 +128,25 @@ class TrackedProduct extends Model
         $tracked_items = $get_tracked_items->distinct()
             ->sum('saved');
         $first_saving = $get_tracked_items->where('deal', true)
-            ->orderBy('created_at', 'asc')
+            ->orderBy('updated_at', 'desc')
             ->first();
         if($first_saving) {
-            $savings_start_date = Carbon::parse($first_saving->created_at)->format('m/d/Y');
+            $savings_start_date = Carbon::parse($first_saving->updated_at)->format('m/d/Y');
         } else {
             $savings_start_date = null;
         }
-
         $total_saved_value = $tracked_items;
-        $currency = Currency::where('country_name', $user->country)->first();
+        $input_country = collect(explode(' ', strtolower($user->country)))
+        ->sort()
+        ->implode(' ');
+        $currency = DB::table('currencies')
+        ->whereRaw("
+            (
+                SELECT STRING_AGG(word, ' ' ORDER BY word)
+                FROM unnest(string_to_array(LOWER(country_name), ' ')) word
+            ) = ?
+        ", [$input_country])
+        ->first();
         $current_savings_str = $currency->symbol.(float)$total_saved_value;
         $total_saved_value = $total_saved_value == null ? 0.00 : $total_saved_value;
         $equivalent_savings_badge = Badge::where('type', 'savings')

@@ -13,10 +13,13 @@ use Google\Service\AndroidPublisher;
 class Subscription extends Model
 {
     use HasUuids;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'user_id',
-        'type'
+        'type',
+        'on_trial_mode',
+        'has_subscribed'
     ];
 
     protected $appends = ['server_time'];
