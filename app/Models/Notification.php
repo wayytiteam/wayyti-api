@@ -22,7 +22,10 @@ class Notification extends Model
         'badge_id',
         'read',
         'type',
-        'country'
+        'country',
+        'old_price',
+        'new_price',
+        'percentage'
     ];
 
     protected $appends = ['created_at_human'];
@@ -51,7 +54,8 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function send_notification($title, $message, $fcm_token) {
+    public static function send_notification($title, $message, $fcm_token)
+    {
         $project_id = config('services.fcm.project_id');
         $bucket_file = 'smartsale-private-key.json';
         $local_file_path = storage_path('smartsale-private-key.json');
@@ -91,7 +95,7 @@ class Notification extends Model
         curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
         $err = curl_error($ch);
-        if($response) {
+        if ($response) {
             return $response;
         } else {
             return $err;
