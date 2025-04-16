@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Mail\PriceDownUpdate;
 use App\Models\GoogleProduct;
 use App\Models\Notification;
 use App\Models\TrackedProduct;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class PriceUpdate extends Command
 {
@@ -97,6 +99,9 @@ class PriceUpdate extends Command
                                 $tracked_product->save();
                                 if ($user->fcm_token) {
                                     Notification::send_notification($title, $new_notification->description, $user->fcm_token);
+                                }
+                                if($user->email) {
+                                    Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $new_notification->percentage));
                                 }
                             }
                             if ($matching_item['price'] > $product->latest_price) {
