@@ -2,7 +2,7 @@
 
 You’ve been tracking this item in Wayyti—and the price just dropped.</br>
 
-<a href="{{$store_url}}">{{$seller}}</a>
+Retailer: <a href="{{$store_url}}">{{$seller}}</a>
 
 Item: {{$product_name}}
 </br>
@@ -17,7 +17,7 @@ Price Dropped by: <span style="color: green;">{{ $percentage }}%</span>
 
 <strong>Want to check it out?</strong> <br />
 Open Wayyti, go to your Alerts, and tap on this item to go straight to the store.
-Just a heads-up—we’re not sure how long this price will last, but we’ll keep tracking it for you.
+Heads-up—we’re not sure how long this price will last, but we’ll keep tracking it for you.
 
 {{-- <x-mail::button :url="$store_url">
     Check here from retailer's store
