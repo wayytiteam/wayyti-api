@@ -14,6 +14,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Mail;
 use Exception;
 use App\Mail\OTPSent;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
@@ -472,6 +473,12 @@ class UserController extends Controller
                     $message = 'Valid OTP code';
                     Cache::forget('verification_code' . $request->email);
                     Cache::forget('verification_code_timestamp' . $request->email);
+                    Subscription::updateOrCreate([
+                        'user_id' => $user->id,
+                    ], [
+                        'user_id' => $user->id,
+                        'type' => 'Monthly'
+                    ]);
                     return response()->json([
                         'user' => $user,
                         'token' => $token
