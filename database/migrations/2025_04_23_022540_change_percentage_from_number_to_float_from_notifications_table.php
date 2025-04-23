@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('notifications', function (Blueprint $table) {
-            $table->float('percentage')->change();
+            $table->float('percentage')->nullable()->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('notifications', function (Blueprint $table) {
-            $table->integer('percentage')->change();
+            $table->integer('percentage')->nullable()->change();
         });
     }
 };
