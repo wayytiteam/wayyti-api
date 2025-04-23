@@ -15,6 +15,10 @@ Was: {{ $old_price }}
 
 Price Dropped by: <span style="color: green;">{{ $percentage }}%</span>
 
+<strong>Want to check it out?</strong>
+Open Wayyti, go to your Alerts, and tap on this item to go straight to the store.
+Just a heads-up—we’re not sure how long this price will last, but we’ll keep tracking it for you.
+
 {{-- <x-mail::button :url="$store_url">
     Check here from retailer's store
 </x-mail::button> --}}
