@@ -17,15 +17,19 @@ class PriceDownUpdate extends Mailable
     public $new_price;
     public $product_name;
     public $percentage;
+    public $store_url;
+    public $seller;
     /**
      * Create a new message instance.
      */
-    public function __construct($old_price, $new_price, $product_name, $percentage)
+    public function __construct($old_price, $new_price, $product_name, $percentage, $store_url, $seller)
     {
         $this->old_price = $old_price;
         $this->new_price = $new_price;
         $this->product_name = $product_name;
         $this->percentage = $percentage;
+        $this->store_url = $store_url;
+        $this->seller = $seller;
 
     }
 

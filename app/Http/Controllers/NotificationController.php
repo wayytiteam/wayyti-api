@@ -18,8 +18,35 @@ class NotificationController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+
     public function index()
     {
+
+        // $twelve_midnight_to_2am = Notification::whereTime('created_at', '>=', '00:00:00')
+        // ->whereTime('created_at', '<', '02:00:00')
+        // ->orderBy('created_at', 'desc')
+        // ->take(100)
+        // ->get();
+
+        // $two_am_to_6am = Notification::whereTime('created_at', '>=', '02:00:00')
+        // ->whereTime('created_at', '<', '06:00:00')
+        // ->orderBy('created_at', 'desc')
+        // ->take(100)
+        // ->get();
+
+        // $six_am_to_12pm = Notification::whereTime('created_at', '>=', '06:00:00')
+        // ->whereTime('created_at', '<', '12:00:00')
+        // ->orderBy('created_at', 'desc')
+        // ->take(100)
+        // ->get();
+
+        // return response()->json([
+        //     '12-2AM' => $twelve_midnight_to_2am,
+        //     '2AM-6Am' => $two_am_to_6am,
+        //     '6AM-12PM' => $six_am_to_12pm
+        // ], 200);
+
         $user = User::find(Auth::id());
         $get_notifications = Notification::where('user_id', $user->id)
             ->where(function (Builder $query) use ($user) {

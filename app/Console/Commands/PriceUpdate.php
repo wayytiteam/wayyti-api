@@ -86,10 +86,11 @@ class PriceUpdate extends Command
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => $title . ' ' . 'has dropped in price from ' . $old_price . ' to ' . $new_price,
-                                    'description' => 'Current Price: ' . $new_price,
+                                    'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
+                                    // 'description' => 'Current Price: ' . $new_price,
                                     'old_price' => $old_price,
                                     'new_price' => $new_price,
-                                    'percentage' => (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100)),
+                                    'percentage' => (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100, 2)),
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_down',
                                     'country' => $user["country"]
@@ -101,7 +102,7 @@ class PriceUpdate extends Command
                                     Notification::send_notification($title, $new_notification->description, $user->fcm_token);
                                 }
                                 if($user->email) {
-                                    Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $new_notification->percentage));
+                                    Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $new_notification->percentage, $matching_item['seller_link'], $matching_item['seller']));
                                 }
                             }
                             if ($matching_item['price'] > $product->latest_price) {
@@ -116,7 +117,7 @@ class PriceUpdate extends Command
                                     'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
                                     'old_price' => $old_price,
                                     'new_price' => $new_price,
-                                    'percentage' => (round((($matching_item['price'] - (int)$product->original_price) / (int)$product->original_price) * 100)),
+                                    'percentage' => (round((($matching_item['price'] - (int)$product->original_price) / (int)$product->original_price) * 100, 2)),
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_up',
                                     'country' => $user["country"]

@@ -35,7 +35,9 @@ Route::get('/price-down-update', function () {
     $old_price = '₱1530';
     $item = 'Uniqlo Soft Puffy Shoulder Bag - Olive';
     $percentage = 30;
-    $mail = new \App\Mail\PriceDownUpdate($old_price, $new_price, $item, $percentage);
+    $store_url = 'https://www.uniqlo.com/ph/en/products/E475638-000?colorCode=COL57&sizeCode=SIZ999&srsltid=AfmBOopy1okHl_cnIa3-65aRFVmfCTowGcWxr3XapVSOVOZhcS1NTcIKH6E';
+    $seller = "Fash Brands";
+    $mail = new \App\Mail\PriceDownUpdate($old_price, $new_price, $item, $percentage, $store_url, $seller);
 
     return $mail->render();
 });

@@ -28,11 +28,16 @@ class Notification extends Model
         'percentage'
     ];
 
-    protected $appends = ['created_at_human'];
+    protected $appends = ['created_at_human', 'created_at_custom'];
 
     protected $casts = [
         'read' => 'boolean'
     ];
+
+    public function getCreatedAtCustomAttribute()
+{
+    return $this->created_at->format('m-d-Y:H:i');
+}
 
     public function monthly_draw_winner(): BelongsTo
     {
