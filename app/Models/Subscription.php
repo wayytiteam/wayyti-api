@@ -34,6 +34,11 @@ class Subscription extends Model
         return $this->belongsTo(User::class);
     }
 
+    protected $casts = [
+        'has_subscribed' => 'boolean',
+        'on_trial_mode' => 'boolean'
+    ];
+
     public static function verify_subscription($package_name, $purchase_token, $product_id) {
         $client = new Client();
         $bucket_file = 'google-play-service-key.json';
