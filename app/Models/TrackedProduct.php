@@ -24,8 +24,9 @@ class TrackedProduct extends Model
     ];
 
     protected $casts = [
-        "deal" => "boolean",
-        'saved' => "float"
+        'deal' => 'boolean',
+        'saved' => 'float',
+        'discount_notification_value' => 'float'
     ];
 
     public function user(): BelongsTo
@@ -43,37 +44,38 @@ class TrackedProduct extends Model
         return $this->belongsTo(GoogleProduct::class);
     }
 
-    public static function get_tracker_badge(User $user) {
+    public static function get_tracker_badge(User $user)
+    {
         $user_id = $user->id;
-        $count_tracked_items = $count_tracked_items = GoogleProduct::whereHas('tracked_products', function(Builder $query) use ($user) {
+        $count_tracked_items = $count_tracked_items = GoogleProduct::whereHas('tracked_products', function (Builder $query) use ($user) {
             $query->where('user_id', $user->id);
         })
-        ->where('country', $user->country)
-        ->count('id');
+            ->where('country', $user->country)
+            ->count('id');
         $item_tracker_badge = Badge::where('type', 'tracker')
             ->where('requirement_value', '<=', $count_tracked_items)
             ->orderBy('requirement_value', 'desc')
             ->first();
         $existing_tracker_badge = BadgeUser::where('user_id', $user_id)
             ->where('country', $user->country)
-            ->whereHas('badge', function($query) {
+            ->whereHas('badge', function ($query) {
                 $query->where('type', 'tracker');
             })
             ->with('badge')
             ->first();
-        if($existing_tracker_badge) {
-            if($item_tracker_badge) {
-                if($existing_tracker_badge->badge_id !== $item_tracker_badge->id) {
-                    if($existing_tracker_badge->badge->requirement_value < $item_tracker_badge->requirement_value) {
+        if ($existing_tracker_badge) {
+            if ($item_tracker_badge) {
+                if ($existing_tracker_badge->badge_id !== $item_tracker_badge->id) {
+                    if ($existing_tracker_badge->badge->requirement_value < $item_tracker_badge->requirement_value) {
                         $new_notification = Notification::create([
                             'user_id' => $user_id,
                             'badge_id' => $item_tracker_badge->id,
                             'message' => 'Achievement Unlocked',
-                            'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
+                            'description' => 'You have unlocked the' . ' ' . $item_tracker_badge->name . ' ' . 'Badge',
                             'type' => 'achievement_unlocked',
                             'country' => $user->country
                         ]);
-                        if($user->fcm_token) {
+                        if ($user->fcm_token) {
                             Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                         }
                     }
@@ -84,7 +86,7 @@ class TrackedProduct extends Model
                 $existing_tracker_badge->delete();
             }
         } else {
-            if($item_tracker_badge) {
+            if ($item_tracker_badge) {
                 BadgeUser::create([
                     'user_id' => $user_id,
                     'badge_id' => $item_tracker_badge->id,
@@ -94,11 +96,11 @@ class TrackedProduct extends Model
                     'user_id' => $user_id,
                     'badge_id' => $item_tracker_badge->id,
                     'message' => 'Achievement Unlocked',
-                    'description' => 'You have unlocked the'.' '.$item_tracker_badge->name.' '.'Badge',
+                    'description' => 'You have unlocked the' . ' ' . $item_tracker_badge->name . ' ' . 'Badge',
                     'type' => 'achievement_unlocked',
                     'country' => $user->country
                 ]);
-                if($user->fcm_token) {
+                if ($user->fcm_token) {
                     Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                 }
             }
@@ -107,7 +109,7 @@ class TrackedProduct extends Model
             ->where('requirement_value', '>', $count_tracked_items)
             ->orderBy('requirement_value', 'asc')
             ->first();
-        if(!$next_item_tracker_badge) {
+        if (!$next_item_tracker_badge) {
             $next_item_tracker_badge = null;
         }
         $items_tracked = array(
@@ -119,7 +121,8 @@ class TrackedProduct extends Model
         return $items_tracked;
     }
 
-    public static function get_savings_badge(User $user) {
+    public static function get_savings_badge(User $user)
+    {
         $user_id = $user->id;
         $get_tracked_items = TrackedProduct::where('user_id', $user_id)
             ->whereHas('google_product', function (Builder $query) use ($user) {
@@ -130,85 +133,85 @@ class TrackedProduct extends Model
         $first_saving = $get_tracked_items->where('deal', true)
             ->orderBy('updated_at', 'desc')
             ->first();
-        if($first_saving) {
+        if ($first_saving) {
             $savings_start_date = Carbon::parse($first_saving->updated_at)->format('m/d/Y');
         } else {
             $savings_start_date = null;
         }
         $total_saved_value = $tracked_items;
         $input_country = collect(explode(' ', strtolower($user->country)))
-        ->sort()
-        ->implode(' ');
+            ->sort()
+            ->implode(' ');
         $currency = DB::table('currencies')
-        ->whereRaw("
+            ->whereRaw("
             (
                 SELECT STRING_AGG(word, ' ' ORDER BY word)
                 FROM unnest(string_to_array(LOWER(country_name), ' ')) word
             ) = ?
         ", [$input_country])
-        ->first();
-        $current_savings_str = $currency->symbol.(float)$total_saved_value;
+            ->first();
+        $current_savings_str = $currency->symbol . (float)$total_saved_value;
         $total_saved_value = $total_saved_value == null ? 0.00 : $total_saved_value;
         $equivalent_savings_badge = Badge::where('type', 'savings')
-        ->where('requirement_value', '<=', (int)$total_saved_value)
-        ->orderBy('requirement_value', 'desc')
-        ->first();
+            ->where('requirement_value', '<=', (int)$total_saved_value)
+            ->orderBy('requirement_value', 'desc')
+            ->first();
         $existing_savings_badge = BadgeUser::where('user_id', $user_id)
             ->where('country', $user->country)
-            ->whereHas('badge', function($query) {
+            ->whereHas('badge', function ($query) {
                 $query->where('type', 'savings');
             })
             ->with('badge')
             ->first();
-            if($existing_savings_badge) {
-                if($equivalent_savings_badge) {
-                    if($existing_savings_badge->badge_id !== $equivalent_savings_badge->id) {
-                        if($existing_savings_badge->badge->requirement_value < $existing_savings_badge->requirement_value) {
-                            $new_notification = Notification::create([
-                                'user_id' => $user_id,
-                                'badge_id' => $existing_savings_badge->id,
-                                'message' => 'Achievement Unlocked',
-                                'description' => 'You have unlocked the'.' '.$existing_savings_badge->name.' '.'Badge',
-                                'type' => 'achievement_unlocked',
-                                'country' => $user->country
-                            ]);
-                            if($user->fcm_token) {
-                                Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
-                            }
+        if ($existing_savings_badge) {
+            if ($equivalent_savings_badge) {
+                if ($existing_savings_badge->badge_id !== $equivalent_savings_badge->id) {
+                    if ($existing_savings_badge->badge->requirement_value < $existing_savings_badge->requirement_value) {
+                        $new_notification = Notification::create([
+                            'user_id' => $user_id,
+                            'badge_id' => $existing_savings_badge->id,
+                            'message' => 'Achievement Unlocked',
+                            'description' => 'You have unlocked the' . ' ' . $existing_savings_badge->name . ' ' . 'Badge',
+                            'type' => 'achievement_unlocked',
+                            'country' => $user->country
+                        ]);
+                        if ($user->fcm_token) {
+                            Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                         }
-                        $existing_savings_badge->badge_id = $equivalent_savings_badge->id;
-                        $existing_savings_badge->save();
-                        $equivalent_savings_badge->requirement_value = $currency->symbol.$equivalent_savings_badge->requirement_value;
                     }
-                } else {
-                    $existing_savings_badge->delete();
+                    $existing_savings_badge->badge_id = $equivalent_savings_badge->id;
+                    $existing_savings_badge->save();
+                    $equivalent_savings_badge->requirement_value = $currency->symbol . $equivalent_savings_badge->requirement_value;
                 }
             } else {
-                if($equivalent_savings_badge) {
-                    BadgeUser::create([
-                        'user_id' => $user_id,
-                        'badge_id' => $equivalent_savings_badge->id,
-                        'country' => $user->country
-                    ]);
-                    $new_notification = Notification::create([
-                        'user_id' => $user_id,
-                        'badge_id' => $equivalent_savings_badge->id,
-                        'message' => 'Achievement Unlocked',
-                        'description' => 'You have unlocked the'.' '.$equivalent_savings_badge->name.' '.'Badge',
-                        'type' => 'achievement_unlocked',
-                        'country' => $user->country
-                    ]);
-                    if($user->fcm_token) {
-                        Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
-                    }
+                $existing_savings_badge->delete();
+            }
+        } else {
+            if ($equivalent_savings_badge) {
+                BadgeUser::create([
+                    'user_id' => $user_id,
+                    'badge_id' => $equivalent_savings_badge->id,
+                    'country' => $user->country
+                ]);
+                $new_notification = Notification::create([
+                    'user_id' => $user_id,
+                    'badge_id' => $equivalent_savings_badge->id,
+                    'message' => 'Achievement Unlocked',
+                    'description' => 'You have unlocked the' . ' ' . $equivalent_savings_badge->name . ' ' . 'Badge',
+                    'type' => 'achievement_unlocked',
+                    'country' => $user->country
+                ]);
+                if ($user->fcm_token) {
+                    Notification::send_notification($new_notification->message, $new_notification->description, $user->fcm_token);
                 }
             }
+        }
         $next_saving_badge = Badge::where('type', 'savings')
             ->where('requirement_value', '>', (int)$total_saved_value)
             ->orderBy('requirement_value', 'asc')
             ->first();
-        if($next_saving_badge) {
-            $next_saving_badge->requirement_value = $currency->symbol.$next_saving_badge->requirement_value;
+        if ($next_saving_badge) {
+            $next_saving_badge->requirement_value = $currency->symbol . $next_saving_badge->requirement_value;
         } else {
             $next_saving_badge = null;
         }
