@@ -25,7 +25,8 @@ class Notification extends Model
         'country',
         'old_price',
         'new_price',
-        'percentage'
+        'percentage',
+        'price_down'
     ];
 
     protected $appends = ['created_at_human', 'created_at_custom'];
@@ -35,9 +36,9 @@ class Notification extends Model
     ];
 
     public function getCreatedAtCustomAttribute()
-{
-    return $this->created_at->format('m-d-Y:H:i');
-}
+    {
+        return $this->created_at->format('m-d-Y:H:i');
+    }
 
     public function monthly_draw_winner(): BelongsTo
     {

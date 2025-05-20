@@ -78,31 +78,89 @@ class PriceUpdate extends Command
                         }
                         if ($matching_item) {
                             if ($matching_item['price'] < $product->latest_price) {
+                                $price_down = null;
                                 $product->original_price = $product->latest_price;
                                 $product->latest_price = $matching_item['price'];
                                 $product->save();
                                 $new_price = $product->currency . $matching_item['price'];
                                 $old_price = $product->currency . $product->original_price;
-                                $new_notification = Notification::create([
-                                    'user_id' => $user->id,
-                                    'message' => $title . ' ' . 'has dropped in price from ' . $old_price . ' to ' . $new_price,
-                                    'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
-                                    // 'description' => 'Current Price: ' . $new_price,
-                                    'old_price' => $old_price,
-                                    'new_price' => $new_price,
-                                    'percentage' => (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100, 2)),
-                                    'tracked_product_id' => $tracked_product->id,
-                                    'type' => 'price_down',
-                                    'country' => $user["country"]
-                                ]);
-                                $initial_saving = (float)$product->original_price - (float)$product->latest_price;
-                                $tracked_product->saved = $initial_saving;
-                                $tracked_product->save();
-                                if ($user->fcm_token) {
-                                    Notification::send_notification($title, $new_notification->description, $user->fcm_token);
+                                if ($tracked_product->discount_notification_type === 'amount') {
+                                    $price_difference = ((int)$product->original_price - $matching_item['price']);
+                                    if ($price_difference >= $tracked_product->discount_notification_value) {
+                                        $price_down = $product->currency . $price_difference;
+                                        $new_notification = Notification::create([
+                                            'user_id' => $user->id,
+                                            'message' => $title . ' ' . 'has dropped in price from ' . $old_price . ' to ' . $new_price,
+                                            'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
+                                            // 'description' => 'Current Price: ' . $new_price,
+                                            'old_price' => $old_price,
+                                            'new_price' => $new_price,
+                                            'price_down' => $price_down,
+                                            'tracked_product_id' => $tracked_product->id,
+                                            'type' => 'price_down',
+                                            'country' => $user["country"]
+                                        ]);
+                                        $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                        $tracked_product->saved = $initial_saving;
+                                        $tracked_product->save();
+                                        if ($user->fcm_token) {
+                                            Notification::send_notification($title, $new_notification->description, $user->fcm_token);
+                                        }
+                                        if ($user->email) {
+                                            Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $price_down, $matching_item['seller_link'], $matching_item['seller']));
+                                        }
+                                    }
                                 }
-                                if($user->email) {
-                                    Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $new_notification->percentage, $matching_item['seller_link'], $matching_item['seller']));
+                                if ($tracked_product->discount_notification_type === 'percentage') {
+                                    $price_difference_percentage = (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100, 2));
+                                    if ($price_difference_percentage >= $tracked_product->discount_notification_value || $tracked_product->discount_) {
+                                        $price_down = $price_difference_percentage . '%';
+                                        $new_notification = Notification::create([
+                                            'user_id' => $user->id,
+                                            'message' => $title . ' ' . 'has dropped in price from ' . $old_price . ' to ' . $new_price,
+                                            'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
+                                            // 'description' => 'Current Price: ' . $new_price,
+                                            'old_price' => $old_price,
+                                            'new_price' => $new_price,
+                                            'price_down' => $price_down,
+                                            'tracked_product_id' => $tracked_product->id,
+                                            'type' => 'price_down',
+                                            'country' => $user["country"]
+                                        ]);
+                                        $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                        $tracked_product->saved = $initial_saving;
+                                        $tracked_product->save();
+                                        if ($user->fcm_token) {
+                                            Notification::send_notification($title, $new_notification->description, $user->fcm_token);
+                                        }
+                                        if ($user->email) {
+                                            Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $price_down, $matching_item['seller_link'], $matching_item['seller']));
+                                        }
+                                    }
+                                }
+                                if ($tracked_product->discount_notification_value === 0) {
+                                    $price_down = $price_difference_percentage . '%';
+                                    $new_notification = Notification::create([
+                                        'user_id' => $user->id,
+                                        'message' => $title . ' ' . 'has dropped in price from ' . $old_price . ' to ' . $new_price,
+                                        'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
+                                        // 'description' => 'Current Price: ' . $new_price,
+                                        'old_price' => $old_price,
+                                        'new_price' => $new_price,
+                                        'price_down' => $price_down,
+                                        'tracked_product_id' => $tracked_product->id,
+                                        'type' => 'price_down',
+                                        'country' => $user["country"]
+                                    ]);
+                                    $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                    $tracked_product->saved = $initial_saving;
+                                    $tracked_product->save();
+                                    if ($user->fcm_token) {
+                                        Notification::send_notification($title, $new_notification->description, $user->fcm_token);
+                                    }
+                                    if ($user->email) {
+                                        Mail::to($user->email)->send(new PriceDownUpdate($old_price, $new_price, $title, $price_down, $matching_item['seller_link'], $matching_item['seller']));
+                                    }
                                 }
                             }
                             if ($matching_item['price'] > $product->latest_price) {
