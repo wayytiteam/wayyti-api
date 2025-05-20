@@ -31,35 +31,35 @@ class TrackedProductController extends Controller
         $sort = $request->query('sort');
         $count_tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
             $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
-                  ->from('tracked_products')
-                  ->where('user_id', $user_id)
-                  ->orderBy('google_product_id')
-                  ->orderBy('user_id');
+                ->from('tracked_products')
+                ->where('user_id', $user_id)
+                ->orderBy('google_product_id')
+                ->orderBy('user_id');
         })->count();
         $tracked_products = TrackedProduct::whereIn('id', function ($query) use ($user_id, $folder_id) {
             $query->select(DB::raw('DISTINCT ON (google_product_id, user_id) id'))
-                  ->from('tracked_products')
-                  ->where('user_id', $user_id)
-                  ->when($folder_id, function ($sub_query) use ($folder_id) {
+                ->from('tracked_products')
+                ->where('user_id', $user_id)
+                ->when($folder_id, function ($sub_query) use ($folder_id) {
                     $sub_query->where('folder_id', $folder_id);
-                    })
-                  ->orderBy('google_product_id')
-                  ->orderBy('user_id');
+                })
+                ->orderBy('google_product_id')
+                ->orderBy('user_id');
         })
-        ->whereHas('google_product', function (Builder $query) use ($user) {
-            $query->where('country', $user->country);
-        })
-        ->when($keyword, function (Builder $query) use ($keyword){
-            $query->whereHas('google_product', function (Builder $q) use ($keyword) {
-                $q->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
-            });
-        })
-        ->when($sort, function (Builder $query) use ($sort) {
-            $query->orderBy('tracked_products.created_at', $sort);
-        })
-        ->distinct()
-        ->with('google_product')
-        ->paginate(10);
+            ->whereHas('google_product', function (Builder $query) use ($user) {
+                $query->where('country', $user->country);
+            })
+            ->when($keyword, function (Builder $query) use ($keyword) {
+                $query->whereHas('google_product', function (Builder $q) use ($keyword) {
+                    $q->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
+                });
+            })
+            ->when($sort, function (Builder $query) use ($sort) {
+                $query->orderBy('tracked_products.created_at', $sort);
+            })
+            ->distinct()
+            ->with('google_product')
+            ->paginate(10);
         $items_tracked = TrackedProduct::get_tracker_badge($user);
         $current_savings = TrackedProduct::get_savings_badge($user);
         return response()->json([
@@ -90,12 +90,10 @@ class TrackedProductController extends Controller
         $currency = Currency::where('country_name', $user->country)->first();
         $currency = $currency->symbol;
         try {
-            if($user) {
-                if($products)
-                {
+            if ($user) {
+                if ($products) {
                     $registered_products = [];
-                    foreach($products as $product)
-                    {
+                    foreach ($products as $product) {
                         $product_data = GoogleProduct::updateOrCreate([
                             "product_id" => $product["product_id"],
                             "merchant" =>  $product["merchant"]
@@ -113,21 +111,21 @@ class TrackedProductController extends Controller
                         ]);
                         $registered_products[] = $product;
                         $folders = $product["folders"];
-                        if(count($folders) == 0) {
+                        if (count($folders) == 0) {
                             $empty_folder = [
                                 'id' => null
                             ];
                             $folders[] = $empty_folder;
                         }
-                        foreach($folders as $folder) {
-                            if($folder["id"] == "0") {
+                        foreach ($folders as $folder) {
+                            if ($folder["id"] == "0") {
                                 $folder["id"] = null;
                             }
                             $tracked_product = TrackedProduct::where('user_id', $user->id)
                                 ->where('google_product_id', $product_data->id)
                                 ->where('folder_id', $folder["id"])
                                 ->first();
-                            if(!$tracked_product) {
+                            if (!$tracked_product) {
                                 $tracked_product = TrackedProduct::create([
                                     'google_product_id' => $product_data->id,
                                     'user_id' => $user->id,
@@ -145,20 +143,20 @@ class TrackedProductController extends Controller
                         }
                     }
                 }
-                if($single_product) {
+                if ($single_product) {
                     $check_product = TrackedProduct::where('user_id', $user->id)
                         ->whereHas('google_product', function (Builder $query) use ($request) {
                             $query->where('product_id', $request->product_id)
                                 ->where('merchant', $request->merchant);
                         })
                         ->first();
-                    if($check_product) {
+                    if ($check_product) {
                         throw new Exception("This is item has already been tracked");
                     } else {
                         $check_google_product = GoogleProduct::where('product_id', $request->product)
                             ->where('merchant', $request->merchant)
                             ->first();
-                        if(!$check_google_product) {
+                        if (!$check_google_product) {
                             $new_google_product = GoogleProduct::create([
                                 'product_id' => $request->product_id,
                                 'title' => $request->title,
@@ -175,6 +173,8 @@ class TrackedProductController extends Controller
                         $new_tracked_product = TrackedProduct::create([
                             'user_id' => $user->id,
                             'google_product_id' => $new_google_product->id,
+                            'discount_notification_type' => $request->discount_notification_type,
+                            'discount_notification_value' => $request->discount_notification_value
                         ]);
                         Point::create([
                             'user_id' => $user->id,
@@ -217,18 +217,18 @@ class TrackedProductController extends Controller
                 })
                 ->with('tracked_products')
                 ->first();
-            if($google_product) {
+            if ($google_product) {
                 $tracked_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $google_product->id)
                     ->with('google_product', 'google_product.folders')
                     ->first();
-                if($tracked_product) {
+                if ($tracked_product) {
                     return response()->json($tracked_product, 200);
                 } else {
-                    Throw new Exception("This product is not yet tracked", 404);
+                    throw new Exception("This product is not yet tracked", 404);
                 }
             } else {
-                Throw new Exception("This product is not yet tracked", 404);
+                throw new Exception("This product is not yet tracked", 404);
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -257,10 +257,10 @@ class TrackedProductController extends Controller
                     $tracked_product->$key = $value;
                 }
             }
-            if($request->deal) {
+            if ($request->deal) {
                 $product_detail = GoogleProduct::find($tracked_product->google_product_id);
                 $quantity = $request->quantity - 1;
-                if($quantity != 0) {
+                if ($quantity != 0) {
                     $saved_value = ((float)$product_detail->original_price - (float)$product_detail->latest_price) * (float)$request->quantity;
                 } else {
                     $saved_value = $tracked_product->saved;
@@ -269,7 +269,7 @@ class TrackedProductController extends Controller
                 $tracked_google_product = TrackedProduct::where('user_id', $user->id)
                     ->where('google_product_id', $tracked_product->google_product_id)
                     ->get();
-                foreach($tracked_google_product as $tracked_product) {
+                foreach ($tracked_google_product as $tracked_product) {
                     $tracked_product->deal = $request->deal;
                     $tracked_product->saved = $saved_value;
                     $tracked_product->save();
@@ -284,27 +284,27 @@ class TrackedProductController extends Controller
                     ->orderBy('requirement_value', 'desc')
                     ->where('requirement_value', '<=', (int)$saved_value)
                     ->first();
-                if($get_current_badge) {
-                    if($point_equivalent_badge) {
-                        if($get_current_badge->badge->id !== $point_equivalent_badge->id) {
+                if ($get_current_badge) {
+                    if ($point_equivalent_badge) {
+                        if ($get_current_badge->badge->id !== $point_equivalent_badge->id) {
                             $get_current_badge->badge_id = $point_equivalent_badge->id;
                             $get_current_badge->save();
-                            if($get_current_badge->badge->point_equivalent < $point_equivalent_badge->point_equivalent) {
+                            if ($get_current_badge->badge->point_equivalent < $point_equivalent_badge->point_equivalent) {
                                 $new_notification = Notification::create([
                                     'user_id' => $user->id,
                                     'message' => 'Achievement_unlocked',
-                                    'description' => 'You have unlocked the'.' '.$point_equivalent_badge->name.' '.'Badge',
+                                    'description' => 'You have unlocked the' . ' ' . $point_equivalent_badge->name . ' ' . 'Badge',
                                     'type' => 'achievement_unlocked',
                                     'badge_id' => $get_current_badge->badge_id
                                 ]);
-                                if($user->fcm_token) {
+                                if ($user->fcm_token) {
                                     Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
                                 }
                             }
                         }
                     }
                 } else {
-                    if($point_equivalent_badge) {
+                    if ($point_equivalent_badge) {
                         BadgeUser::create([
                             'user_id' => $user->id,
                             'badge_id' => $point_equivalent_badge->id,
@@ -313,11 +313,11 @@ class TrackedProductController extends Controller
                         $new_notification = Notification::create([
                             'user_id' => $user->id,
                             'message' => 'Achievement_unlocked',
-                            'description' => 'You have unlocked the'.' '.$point_equivalent_badge->name.' '.'Badge',
+                            'description' => 'You have unlocked the' . ' ' . $point_equivalent_badge->name . ' ' . 'Badge',
                             'type' => 'achievement_unlocked',
                             'badge_id' => $point_equivalent_badge->id
                         ]);
-                        if($user->fcm_token) {
+                        if ($user->fcm_token) {
                             Notification::send_notification($new_notification->message, $new_notification->message, $user->fcm_token);
                         }
                     }
@@ -340,22 +340,23 @@ class TrackedProductController extends Controller
         }
     }
 
-    public function batch_update(Request $request) {
+    public function batch_update(Request $request)
+    {
         $user = User::find(Auth::id());
         $tracked_products = $request->tracked_products;
         $folders = $request->folders;
-        try{
-            foreach($tracked_products as $tracked_product) {
+        try {
+            foreach ($tracked_products as $tracked_product) {
                 $this_product = TrackedProduct::where('id', $tracked_product)->with('folder')->first();
-                if(count($folders) == 0) {
+                if (count($folders) == 0) {
                     $this_product->folder_id = null;
                     $this_product->save();
                 } else {
-                    foreach($folders as $folder) {
+                    foreach ($folders as $folder) {
                         $is_duplicated = TrackedProduct::where('folder_id', $folder)
                             ->where('google_product_id', $this_product->google_product_id)
                             ->first();
-                        if(!$is_duplicated) {
+                        if (!$is_duplicated) {
                             TrackedProduct::create([
                                 'user_id' => $user->id,
                                 'folder_id' => $folder,
@@ -364,11 +365,11 @@ class TrackedProductController extends Controller
                         }
                     }
                 }
-                if(!in_array($this_product->folder_id, $folders)){
+                if (!in_array($this_product->folder_id, $folders)) {
                     $this_product->delete();
                 }
             }
-            return response('',200);
+            return response('', 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -382,10 +383,10 @@ class TrackedProductController extends Controller
     public function destroy(string $google_product_id)
     {
         $user = User::find(Auth::id());
-         $tracked_products = TrackedProduct::where('user_id', $user->id)
+        $tracked_products = TrackedProduct::where('user_id', $user->id)
             ->where('google_product_id', $google_product_id)
             ->get();
-        foreach($tracked_products as $tracked_product) {
+        foreach ($tracked_products as $tracked_product) {
             $tracked_product->delete();
         }
         return response()->json([
