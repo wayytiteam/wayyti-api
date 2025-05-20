@@ -113,7 +113,7 @@ class PriceUpdate extends Command
                                 }
                                 if ($tracked_product->discount_notification_type === 'percentage') {
                                     $price_difference_percentage = (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100, 2));
-                                    if ($price_difference_percentage >= $tracked_product->discount_notification_value || $tracked_product->discount_) {
+                                    if ($price_difference_percentage >= $tracked_product->discount_notification_value) {
                                         $price_down = $price_difference_percentage . '%';
                                         $new_notification = Notification::create([
                                             'user_id' => $user->id,
