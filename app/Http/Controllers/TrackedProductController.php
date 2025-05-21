@@ -130,6 +130,8 @@ class TrackedProductController extends Controller
                                     'google_product_id' => $product_data->id,
                                     'user_id' => $user->id,
                                     'folder_id' => $folder["id"],
+                                    'discount_notification_type' => $product['discount_notification_type'],
+                                    'discount_notification_value' => $product['discount_notification_value']
                                 ]);
                                 Point::create([
                                     'user_id' => $user->id,
