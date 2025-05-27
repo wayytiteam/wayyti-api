@@ -21,14 +21,14 @@ class TrackedProduct extends Model
         'user_id',
         'folder_id',
         'google_product_id',
-        'discount_notification_value',
-        'discount_notification_type'
+        // 'discount_notification_value',
+        // 'discount_notification_type'
     ];
 
     protected $casts = [
         'deal' => 'boolean',
         'saved' => 'float',
-        'discount_notification_value' => 'float'
+        // 'discount_notification_value' => 'float'
     ];
 
     public function user(): BelongsTo
