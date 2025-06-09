@@ -29,7 +29,6 @@ class UserController extends Controller
      */
     public function index()
     {
-        // test deploy
         $users = User::where('is_admin', false)->paginate();
 
         return response()->json($users, 200);
