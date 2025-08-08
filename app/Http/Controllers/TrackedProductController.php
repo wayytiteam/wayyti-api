@@ -371,7 +371,7 @@ class TrackedProductController extends Controller
                     $this_product->delete();
                 }
             }
-            return response('', 200);
+            return response(status:200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
