@@ -364,7 +364,9 @@ class TrackedProductController extends Controller
                                 'folder_id' => $folder,
                                 'google_product_id' => $this_product->google_product_id,
                                 'discount_notification_type' => $this_product->discount_notification_type,
-                                'discount_notification_value' => $this_product->discount_notification_value
+                                'discount_notification_value' => $this_product->discount_notification_value,
+                                'deal' => $this_product->deal,
+                                'saved' => $this_product->saved
                             ]);
                         }
                     }
