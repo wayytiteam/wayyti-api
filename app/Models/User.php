@@ -25,6 +25,7 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    // test deploy
     protected $fillable = [
         'username',
         'email',
