@@ -130,8 +130,8 @@ class TrackedProductController extends Controller
                                     'google_product_id' => $product_data->id,
                                     'user_id' => $user->id,
                                     'folder_id' => $folder["id"],
-                                    // 'discount_notification_type' => $product['discount_notification_type'],
-                                    // 'discount_notification_value' => $product['discount_notification_value']
+                                    'discount_notification_type' => $product['discount_notification_type'],
+                                    'discount_notification_value' => $product['discount_notification_value']
                                 ]);
                                 Point::create([
                                     'user_id' => $user->id,
@@ -175,8 +175,8 @@ class TrackedProductController extends Controller
                         $new_tracked_product = TrackedProduct::create([
                             'user_id' => $user->id,
                             'google_product_id' => $new_google_product->id,
-                            // 'discount_notification_type' => $request->discount_notification_type,
-                            // 'discount_notification_value' => $request->discount_notification_value
+                            'discount_notification_type' => $request->discount_notification_type,
+                            'discount_notification_value' => $request->discount_notification_value
                         ]);
                         Point::create([
                             'user_id' => $user->id,
@@ -363,6 +363,10 @@ class TrackedProductController extends Controller
                                 'user_id' => $user->id,
                                 'folder_id' => $folder,
                                 'google_product_id' => $this_product->google_product_id,
+                                'discount_notification_type' => $this_product->discount_notification_type,
+                                'discount_notification_value' => $this_product->discount_notification_value,
+                                'deal' => $this_product->deal,
+                                'saved' => $this_product->saved
                             ]);
                         }
                     }
@@ -371,7 +375,7 @@ class TrackedProductController extends Controller
                     $this_product->delete();
                 }
             }
-            return response('', 200);
+            return response(status:200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
