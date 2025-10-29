@@ -23,10 +23,10 @@ class GoogleProductController extends Controller
         $google_products = GoogleProduct::where(function (Builder $query) use ($keyword) {
             $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($keyword) . '%']);
         })
-        ->where('country', $user->country)
-        ->paginate(10);
+            ->where('country', $user->country)
+            ->paginate(10);
 
-        if(!$user->country) {
+        if (!$user->country) {
             return response()->json([
                 'message' => 'Country has not been set'
             ], 400);
@@ -53,7 +53,7 @@ class GoogleProductController extends Controller
         $keyword = $request->keyword;
         $domain = $request->domain;
 
-        if(!$user->country) {
+        if (!$user->country) {
             return response()->json([
                 'message' => 'Country has not been set'
             ], 400);
@@ -102,9 +102,9 @@ class GoogleProductController extends Controller
             $google_product = GoogleProduct::whereHas('tracked_products', function (Builder $query) {
                 $query->where('user_id', Auth::id());
             })
-            ->where('product_id', $google_product_id)
-            ->first();
-            if(!$google_product) {
+                ->where('product_id', $google_product_id)
+                ->first();
+            if (!$google_product) {
                 throw new Exception("This product was not tracked yet");
             }
             return response()->json($google_product, 200);
@@ -128,11 +128,13 @@ class GoogleProductController extends Controller
      */
     public function update(Request $request, string $google_product_id)
     {
+
         $product = GoogleProduct::updateOrCreate([
             'product_id' => $google_product_id
-        ],[
+        ], [
             'price' => $request->price,
-            'merchant' => $request->seller
+            'merchant' => $request->seller,
+            'product_token' => $request->product_token,
         ]);
 
         return response()->json($product, 200);
@@ -232,11 +234,11 @@ class GoogleProductController extends Controller
 
         $response_data = json_decode($result, true);
         $item_results = [];
-        if(isset($response_data['results'][0]['content']['pricing'])) {
+        if (isset($response_data['results'][0]['content']['pricing'])) {
             $title = $response_data['results'][0]['content']['title'];
-            if(count($response_data['results'][0]['content']['pricing']['online']) > 0) {
+            if (count($response_data['results'][0]['content']['pricing']['online']) > 0) {
                 $merchants = $response_data['results'][0]['content']['pricing']['online'];
-                foreach($merchants as $merchant) {
+                foreach ($merchants as $merchant) {
 
                 }
                 // $item_results['item']['title'] = $title;
@@ -252,11 +254,12 @@ class GoogleProductController extends Controller
         return response()->json($item_results, 200);
     }
 
-    public function browser_instruction(Request $request) {
+    public function browser_instruction(Request $request)
+    {
         $oxylabs_username = env('OXYLABS_USERNAME');
         $oxylabs_password = env('OXYLABS_PASSWORD');
         $url = $request->query('url');
-         $params = array(
+        $params = array(
             "source" => "universal",
             "url" => $url,
             // "render" => "html",
@@ -288,7 +291,7 @@ class GoogleProductController extends Controller
                     ]
                 ]
             ]
-         );
+        );
         // $query_string = http_build_query($params);
         // $ch = curl_init();
         // curl_setopt($ch, CURLOPT_URL, $url."?".$query_string);
@@ -303,17 +306,15 @@ class GoogleProductController extends Controller
         return $params;
     }
 
-    public function test_price_update(Request $request){
-        {
+    public function test_price_update(Request $request)
+    { {
             $oxylabs_username = env('OXYLABS_USERNAME');
             $oxylabs_password = env('OXYLABS_PASSWORD');
             $url = "https://realtime.oxylabs.io/v1/queries";
             $products = GoogleProduct::whereHas('tracked_products')->with('users')->get();
-            foreach($products as $product)
-            {
+            foreach ($products as $product) {
                 $users = $product['users'];
-                foreach($users as $user)
-                {
+                foreach ($users as $user) {
                     $params = array(
                         'source' => 'google_shopping_product',
                         'geo_location' => $user["country"],
@@ -341,9 +342,9 @@ class GoogleProductController extends Controller
                     curl_close($ch);
                     $response_data = json_decode($result, true);
 
-                    if(isset($response_data['results'][0]['content']['pricing'])) {
+                    if (isset($response_data['results'][0]['content']['pricing'])) {
                         $title = $response_data['results'][0]['content']['title'];
-                        if(count($response_data['results'][0]['content']['pricing']['online']) > 0) {
+                        if (count($response_data['results'][0]['content']['pricing']['online']) > 0) {
                             return $response_data['results'][0]['content']['pricing']['online'];
                             $item = $response_data['results'][0]['content']['pricing']['online'][0];
                             // if($item['price'] < $product->latest_price) {

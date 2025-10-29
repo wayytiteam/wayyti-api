@@ -24,7 +24,8 @@ class GoogleProduct extends Model
         'country',
         'description',
         'link',
-        'job_id'
+        'job_id',
+        'product_token'
     ];
 
 
@@ -42,14 +43,16 @@ class GoogleProduct extends Model
 
     public function folders(): BelongsToMany
     {
-        return $this->belongsToMany(Folder::class,'tracked_products', 'google_product_id', 'folder_id');
+        return $this->belongsToMany(Folder::class, 'tracked_products', 'google_product_id', 'folder_id');
     }
 
-    public function getLatestPriceStrAttribute() {
-        return $this->currency.$this->latest_price;
+    public function getLatestPriceStrAttribute()
+    {
+        return $this->currency . $this->latest_price;
     }
 
-    public function getOriginalPriceStrAttribute() {
-        return $this->currency.$this->original_price;
+    public function getOriginalPriceStrAttribute()
+    {
+        return $this->currency . $this->original_price;
     }
 }

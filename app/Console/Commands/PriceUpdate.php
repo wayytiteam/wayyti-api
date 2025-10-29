@@ -43,7 +43,7 @@ class PriceUpdate extends Command
                     'source' => 'google_shopping_product',
                     'geo_location' => $user["country"],
                     'domain' => 'com',
-                    'query' => $product->product_id,
+                    'query' => $product->product_token,
                     'parse' => true,
                 );
                 $ch = curl_init();
