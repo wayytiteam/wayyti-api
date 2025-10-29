@@ -65,6 +65,7 @@ class MigrateTrackedProductTokens extends Command
                         'geo_location' => $product->country ?? 'Australia',
                         'domain' => 'com',
                         'parse' => true,
+                        'pages' => 1,
                     ]);
 
                     $ch = curl_init($this->oxylabsUrl);
@@ -82,7 +83,7 @@ class MigrateTrackedProductTokens extends Command
                     $handles[(string) $product->id] = ['ch' => $ch, 'product' => $product];
                     curl_multi_add_handle($multiHandle, $ch);
 
-    
+
                     if (count($handles) >= $concurrency) {
                         $this->execMulti($multiHandle, $handles, $processed, $total, $failedProducts);
                     }
@@ -106,7 +107,7 @@ class MigrateTrackedProductTokens extends Command
             for ($attempt = 1; $attempt <= $MAX_RETRIES && count($retryMap) > 0; $attempt++) {
                 $this->info("Retry attempt {$attempt} — items remaining: " . count($retryMap));
 
- 
+
                 $ids = array_keys($retryMap);
                 $chunksOfIds = array_chunk($ids, $batchSize);
                 $newRetryMap = [];
@@ -130,6 +131,7 @@ class MigrateTrackedProductTokens extends Command
                             'query' => $gp->title,
                             'geo_location' => $gp->country ?? 'Australia',
                             'domain' => 'com',
+                            'pages'=> 1,
                             'parse' => true,
                         ]);
 
@@ -163,10 +165,10 @@ class MigrateTrackedProductTokens extends Command
                 $this->info("Attempt {$attempt} complete — remaining: " . count($retryMap));
             }
 
-    
+
             $finalFailed = array_keys($retryMap);
             if (!empty($finalFailed)) {
-    
+
                 // Storage::put($this->failedSavePath, json_encode($finalFailed));
                 $this->error("⚠️ Some products still failed after retries. Saved list to storage/{$this->failedSavePath}");
                 Log::warning('Oxylabs migration - final failed products', ['ids' => $finalFailed]);
@@ -195,10 +197,10 @@ class MigrateTrackedProductTokens extends Command
      */
     private function execMulti($multiHandle, array &$handles, int &$processed, int $total, array &$failedProducts)
     {
-       
+
         do {
             $status = curl_multi_exec($multiHandle, $running);
-  
+
             curl_multi_select($multiHandle, 1.0);
         } while ($running > 0 && $status === CURLM_OK);
 
