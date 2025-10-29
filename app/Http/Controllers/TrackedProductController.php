@@ -101,6 +101,7 @@ class TrackedProductController extends Controller
                             "product_id" => $product["product_id"],
                             "title" => $product["title"],
                             "image" => $product["image"],
+                            "product_token" => $product["product_token"],
                             "merchant" => $product["merchant"],
                             "original_price" => $product["original_price"],
                             "latest_price" => $product["latest_price"],
@@ -168,6 +169,7 @@ class TrackedProductController extends Controller
                                 'latest_price' => $request->latest_price,
                                 'currency' => $currency,
                                 'country' => $user->country,
+                                'product_token' => $request->product_token,
                                 'description' => $request->description ?? null,
                                 'link' => $request->link ?? null
                             ]);
