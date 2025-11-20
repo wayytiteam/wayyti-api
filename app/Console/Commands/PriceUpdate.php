@@ -85,7 +85,7 @@ class PriceUpdate extends Command
                                 $new_price = $product->currency . $matching_item['price'];
                                 $old_price = $product->currency . $product->original_price;
                                 if ($tracked_product->discount_notification_type === 'amount') {
-                                    $price_difference = ((int)$product->original_price - $matching_item['price']);
+                                    $price_difference = ((float) $product->original_price - $matching_item['price']);
                                     if ($price_difference >= $tracked_product->discount_notification_value) {
                                         $price_down = $product->currency . $price_difference;
                                         $new_notification = Notification::create([
@@ -100,7 +100,7 @@ class PriceUpdate extends Command
                                             'type' => 'price_down',
                                             'country' => $user["country"]
                                         ]);
-                                        $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                        $initial_saving = (float) $product->original_price - (float) $product->latest_price;
                                         $tracked_product->saved = $initial_saving;
                                         $tracked_product->save();
                                         if ($user->fcm_token) {
@@ -112,7 +112,7 @@ class PriceUpdate extends Command
                                     }
                                 }
                                 if ($tracked_product->discount_notification_type === 'percentage') {
-                                    $price_difference_percentage = (round((((int)$product->original_price - $matching_item['price']) / (int)$product->original_price) * 100, 2));
+                                    $price_difference_percentage = (round((((float) $product->original_price - $matching_item['price']) / (float) $product->original_price) * 100, 2));
                                     if ($price_difference_percentage >= $tracked_product->discount_notification_value) {
                                         $price_down = $price_difference_percentage . '%';
                                         $new_notification = Notification::create([
@@ -127,7 +127,7 @@ class PriceUpdate extends Command
                                             'type' => 'price_down',
                                             'country' => $user["country"]
                                         ]);
-                                        $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                        $initial_saving = (float) $product->original_price - (float) $product->latest_price;
                                         $tracked_product->saved = $initial_saving;
                                         $tracked_product->save();
                                         if ($user->fcm_token) {
@@ -152,7 +152,7 @@ class PriceUpdate extends Command
                                         'type' => 'price_down',
                                         'country' => $user["country"]
                                     ]);
-                                    $initial_saving = (float)$product->original_price - (float)$product->latest_price;
+                                    $initial_saving = (float) $product->original_price - (float) $product->latest_price;
                                     $tracked_product->saved = $initial_saving;
                                     $tracked_product->save();
                                     if ($user->fcm_token) {
@@ -175,7 +175,7 @@ class PriceUpdate extends Command
                                     'description' => 'Current Price: ' . $new_price . '(was ' . $old_price . ')',
                                     'old_price' => $old_price,
                                     'new_price' => $new_price,
-                                    'percentage' => (round((($matching_item['price'] - (int)$product->original_price) / (int)$product->original_price) * 100, 2)),
+                                    'percentage' => (round((($matching_item['price'] - (float) $product->original_price) / (float) $product->original_price) * 100, 2)),
                                     'tracked_product_id' => $tracked_product->id,
                                     'type' => 'price_up',
                                     'country' => $user["country"]
