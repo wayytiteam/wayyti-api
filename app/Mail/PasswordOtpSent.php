@@ -28,19 +28,20 @@ class PasswordOtpSent extends Mailable
      */
     public function envelope(): Envelope
     {
-        return new Envelope(<x-mail::message>
-<strong style="font-size: 20px;">{{ $greetings }}</strong>
+        return new Envelope(
+            <x-mail::message>
+                <strong style="font-size: 20px;">{{ $greetings }}</strong>
 
-{{ $header }}
+                {{ $header }}
 
-<strong style="font-size: 30px; color: #0077CE;">{{ $code }}</strong>
+                <strong style="font-size: 30px; color: #0077CE;">{{ $code }}</strong>
 
-This code is valid for the next 24 hours. <br><br>
-{{ $message }}
+                This code is valid for the next 24 hours. <br><br>
+                {{ $message }}
 
-Thank you,<br>
-The Waytti Team
-</x-mail::message>
+                Thank you,<br>
+                The Waytti Team
+            </x-mail::message>
 
             subject: 'Password Otp Sent',
         );

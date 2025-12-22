@@ -72,7 +72,9 @@ Route::middleware('auth:api')->group(function () {
     ]);
 });
 
-Route::middleware(['auth:api', 'scope:admin'])->group(function () {
+Route::middleware(['auth:api', 'scope:admin'])
+->name('admin.')
+->group(function () {
     Route::get('admin/users/report', [AdminUserController::class, 'report']);
     Route::get('admin/subscriptions', [SubscriptionController:: class, 'index']);
     Route::apiResources([

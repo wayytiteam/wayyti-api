@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Currency;
 use Exception;
 
-class TrackedProductController extends Controller
+class   TrackedProductController extends Controller
 {
     /**
      * Display a listing of the resource.
