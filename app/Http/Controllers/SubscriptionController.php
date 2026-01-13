@@ -97,8 +97,12 @@ class SubscriptionController extends Controller
         $product_id = $request->product_id;
         try {
             $client = new Client();
-
-            $client->setAuthConfig(config('services.google.config'));
+            $bucket_file = 'google-play-service-key.json';
+            $local_file_path = storage_path('google-play-service-key.json');
+            $file_content = Storage::disk('s3')->get($bucket_file);
+            file_put_contents($local_file_path, $file_content);
+            $client->setAuthConfig($local_file_path);
+            // $client->setAuthConfig(config('services.google.config'));
             $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
 
             $service = new AndroidPublisher($client);
