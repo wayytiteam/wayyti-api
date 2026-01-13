@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Google\Service\AndroidPublisher;
 use Google\Client;
+use App\Services\AppStoreJwtService;
+use Illuminate\Support\Facades\Http;
 
 class SubscriptionController extends Controller
 {
@@ -88,33 +90,130 @@ class SubscriptionController extends Controller
         return response($subscription, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Subscription $subscriptions)
-    {
-        //
-    }
-
-    public function verify_subscription(Request $request) {
-        $client = new Client();
-        $bucket_file = 'google-play-service-key.json';
-        $local_file_path = storage_path('google-play-service-key.json');
-        // dd($local_file_path);
-        $file_content = Storage::disk('s3')->get($bucket_file);
-        file_put_contents($local_file_path, $file_content);
-        $client->setAuthConfig($local_file_path);
-        // $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
-        $client->addScope('https://www.googleapis.com/auth/androidpublisher');
-        $service = new AndroidPublisher($client);
+    public function verify_google_subscription(Request $request)
+    {   
+        $package_name = $request->package_name;
+        $purchase_token = $request->purchase_token;
+        $product_id = $request->product_id;
         try {
-            $subscription = $service->purchases_subscriptions->get($request->package_name, $request->product_id, $request->purchase_token);
-            // return $subscription->paymentState;
-            dd($subscription);
-        } catch (\Exception $e) {
-            return $e;
+            $client = new Client();
+
+            $client->setAuthConfig(config('services.google.config'));
+            $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
+
+            $service = new AndroidPublisher($client);
+
+            $result = $service->purchases_subscriptions->get(
+                $package_name,
+                $product_id,
+                $purchase_token
+            );
+
+            if ($result->getPaymentState() === 1) {
+                return [
+                    'valid' => true,
+                    'data' => $result,
+                ];
+            }
+
+            return [
+                'valid' => false,
+                'reason' => 'invalid_payment_state',
+                'data' => $result,
+            ];
+
+        } catch (\Throwable $e) {
+            return [
+                'valid' => false,
+                'reason' => 'verification_failed',
+                'error' => $e->getMessage(),
+            ];
         }
     }
+    public function verify_apple_subscription(Request $request)
+    {
+        try {
+            $jwt_token = app(AppStoreJwtService::class)->generateToken();
+
+            // Sandbox URL (switch to production when live)
+            $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/' . $request->transaction_id;
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $jwt_token,
+                'Accept' => 'application/json',
+            ])->get($url);
+
+            if (! $response->successful()) {
+                return [
+                    'valid' => false,
+                    'reason' => 'apple_api_error',
+                    'desc' => $response->body(),
+                    'status' => $response->status(),
+                ];
+            }
+
+            $data = $response->json();
+            $signed_transaction_info = $data['signedTransactionInfo'] ?? null;
+
+            if (! $signed_transaction_info) {
+                return [
+                    'valid' => false,
+                    'reason' => 'missing_signed_transaction_info',
+                ];
+            }
+
+            $decoded = app(AppStoreJwtService::class)
+                ->decodeToken($signed_transaction_info);
+
+            /*
+            | Apple Status Reference
+            | expirationDate > now = ACTIVE
+            */
+            if (
+                isset($decoded->expirationDate) &&
+                now()->timestamp * 1000 < $decoded->expirationDate
+            ) {
+                return [
+                    'valid' => true,
+                    'product_id' => $decoded->productId,
+                    'expires_at' => Carbon::createFromTimestampMs($decoded->expirationDate),
+                    'data' => $decoded,
+                ];
+            }
+
+            return [
+                'valid' => false,
+                'reason' => 'subscription_expired',
+                'data' => $decoded,
+            ];
+
+        } catch (\Throwable $e) {
+            return [
+                'valid' => false,
+                'reason' => 'verification_failed',
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+    // public function verify_subscription(Request $request) {
+    //     $client = new Client();
+    //     $bucket_file = 'google-play-service-key.json';
+    //     $local_file_path = storage_path('google-play-service-key.json');
+    //     // dd($local_file_path);
+    //     $file_content = Storage::disk('s3')->get($bucket_file);
+    //     file_put_contents($local_file_path, $file_content);
+    //     $client->setAuthConfig($local_file_path);
+    //     // $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
+    //     $client->addScope('https://www.googleapis.com/auth/androidpublisher');
+    //     $service = new AndroidPublisher($client);
+    //     try {
+    //         $subscription = $service->purchases_subscriptions->get($request->package_name, $request->product_id, $request->purchase_token);
+    //         // return $subscription->paymentState;
+    //         dd($subscription);
+    //     } catch (\Exception $e) {
+    //         return $e;
+    //     }
+    // }
 
     // public function subscription_check(){
     //     $subscriptions = Subscription::get();

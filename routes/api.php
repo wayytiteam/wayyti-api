@@ -43,6 +43,9 @@ Route::post('notifications/test', [NotificationController::class, 'test']);
 Route::post('admin/users/authenticate', [AdminUserController::class, 'admin_auth']);
 Route::resource('personas', PersonaController::class);
 Route::post('users', [UserController::class, 'store']);
+#subscription routes
+Route::post('subscriptions/verify-google-subscription', [SubscriptionController::class, 'verify_google_subscription']);
+// Route::post('subscriptions/verify-apple-subscription', [SubscriptionController::class, 'verify_apple_subscription']);
 // Route::post('subscriptions/verify-subscription', [SubscriptionController::class, 'verify_subscription']);
 // Route::get('subscriptions/subscription-check', [SubscriptionController::class, 'subscription_check']);
 

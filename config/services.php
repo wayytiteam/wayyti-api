@@ -45,12 +45,14 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URL'),
+        'config' => json_decode(env('GOOGLE_CONFIG'), true)
     ],
 
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
         'client_secret' => env('APPLE_CLIENT_SECRET'),
         'redirect' => env('APPLE_REDIRECT_URI'),
+        'issuer_id' => env('APPLE_ISSUER_ID'),
         'team_id' => env('APPLE_TEAM_ID'),
         'key_id' => env('APPLE_KEY_ID'),
         'private_key' => storage_path('keys/AuthKey_6Y8LCM64US.p8'),
