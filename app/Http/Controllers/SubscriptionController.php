@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\AppStoreJwtService;
 use Carbon\Carbon;
+use Google\Client;
+use Google\Service\AndroidPublisher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Google\Service\AndroidPublisher;
-use Google\Client;
-use App\Services\AppStoreJwtService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class SubscriptionController extends Controller
 {
@@ -28,9 +28,10 @@ class SubscriptionController extends Controller
         })->when($status, function (Builder $query) use ($status) {
             $query->where('status', $status);
         })->with('user')
-        ->paginate(10);
+            ->paginate(10);
 
         return response()->json($subscriptions, 200);
+
         return $subscriptions;
     }
 
@@ -53,12 +54,13 @@ class SubscriptionController extends Controller
                 'user_id' => $user->id,
             ], [
                 'user_id' => $user->id,
-                'type' => $request->type
+                'type' => $request->type,
             ]);
+
             return response()->json($new_subscription, 200);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 400);
         }
     }
@@ -87,16 +89,18 @@ class SubscriptionController extends Controller
     {
         $subscription->update($request->only(array_keys($subscription->getAttributes())));
         $subscription->save();
+
         return response($subscription, 200);
     }
 
     public function verify_google_subscription(Request $request)
-    {   
+    {
         $package_name = $request->package_name;
         $purchase_token = $request->purchase_token;
         $product_id = $request->product_id;
+        $user_id = $request->user_id;
         try {
-            $client = new Client();
+            $client = new Client;
             $bucket_file = 'google-play-service-key.json';
             $local_file_path = storage_path('google-play-service-key.json');
             $file_content = Storage::disk('s3')->get($bucket_file);
@@ -113,19 +117,32 @@ class SubscriptionController extends Controller
                 $purchase_token
             );
 
-            if ($result->getPaymentState() === 1) {
+            if ($result->getPaymentState() !== 1) {
                 return [
-                    'valid' => true,
+                    'valid' => false,
+                    'reason' => 'invalid_payment_state',
                     'data' => $result,
                 ];
             }
 
+            Subscription::updateOrCreate(
+                [
+                    'user_id' => $user_id,
+                ],
+                [
+                    'type' => $request->type,
+                    'product_id' => $request->product_id,
+                    'purchase_token' => $request->purchase_token,
+                    'subscription_id' => $result->getOrderId(),
+                    'has_subscribed' => true,
+                    'on_trial_mode' => false,
+                ]
+            );
+
             return [
-                'valid' => false,
-                'reason' => 'invalid_payment_state',
+                'valid' => true,
                 'data' => $result,
             ];
-
         } catch (\Throwable $e) {
             return [
                 'valid' => false,
@@ -134,16 +151,17 @@ class SubscriptionController extends Controller
             ];
         }
     }
+
     public function verify_apple_subscription(Request $request)
     {
         try {
             $jwt_token = app(AppStoreJwtService::class)->generateToken();
 
             // Sandbox URL (switch to production when live)
-            $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/' . $request->transaction_id;
+            $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.$request->transaction_id;
 
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $jwt_token,
+                'Authorization' => 'Bearer '.$jwt_token,
                 'Accept' => 'application/json',
             ])->get($url);
 
@@ -190,7 +208,6 @@ class SubscriptionController extends Controller
                 'reason' => 'subscription_expired',
                 'data' => $decoded,
             ];
-
         } catch (\Throwable $e) {
             return [
                 'valid' => false,
