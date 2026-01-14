@@ -3,23 +3,27 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Google\Client;
+use Google\Service\AndroidPublisher;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Google\Client;
 use Illuminate\Support\Facades\Storage;
-use Google\Service\AndroidPublisher;
 
 class Subscription extends Model
 {
     use HasUuids;
+
     protected $keyType = 'string';
 
     protected $fillable = [
         'user_id',
         'type',
         'on_trial_mode',
-        'has_subscribed'
+        'has_subscribed',
+        'product_id',
+        'purchase_token',
+        'sub_id',
     ];
 
     protected $appends = ['server_time'];
@@ -36,11 +40,12 @@ class Subscription extends Model
 
     protected $casts = [
         'has_subscribed' => 'boolean',
-        'on_trial_mode' => 'boolean'
+        'on_trial_mode' => 'boolean',
     ];
 
-    public static function verify_subscription($package_name, $purchase_token, $product_id) {
-        $client = new Client();
+    public static function verify_subscription($package_name, $purchase_token, $product_id)
+    {
+        $client = new Client;
         $bucket_file = 'google-play-service-key.json';
         $local_file_path = storage_path('google-play-service-key.json');
         $file_content = Storage::disk('s3')->get($bucket_file);
@@ -51,6 +56,7 @@ class Subscription extends Model
         $service = new AndroidPublisher($client);
         try {
             $subscription = $service->purchases_subscriptions->get($package_name, $purchase_token, $product_id);
+
             return $subscription;
         } catch (\Exception $e) {
             return $e;
