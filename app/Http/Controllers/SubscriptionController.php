@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class SubscriptionController extends Controller
 {
@@ -154,11 +155,18 @@ class SubscriptionController extends Controller
 
     public function verify_apple_subscription(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'transaction_id' => 'required|string',
+            'user_id' => 'required|exists:users,id',
+        ]);
+        if ($validator->fails()) {
+            return response($validator->errors(), 400);
+        }
         try {
             $jwt_token = app(AppStoreJwtService::class)->generateToken();
 
-            // Sandbox URL (switch to production when live)
-            $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.$request->transaction_id;
+            $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.
+                $request->transaction_id;
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$jwt_token,
@@ -175,6 +183,7 @@ class SubscriptionController extends Controller
             }
 
             $data = $response->json();
+
             $signed_transaction_info = $data['signedTransactionInfo'] ?? null;
 
             if (! $signed_transaction_info) {
@@ -187,26 +196,39 @@ class SubscriptionController extends Controller
             $decoded = app(AppStoreJwtService::class)
                 ->decodeToken($signed_transaction_info);
 
-            /*
-            | Apple Status Reference
-            | expirationDate > now = ACTIVE
-            */
             if (
                 isset($decoded->expirationDate) &&
                 now()->timestamp * 1000 < $decoded->expirationDate
             ) {
+                Subscription::updateOrCreate(
+                    [
+                        'user_id' => $request->user_id,
+                    ],
+                    [
+                        'type' => $request->type ?? 'apple_pay',
+                        'product_id' => $decoded->productId,
+                        'subscription_id' => $decoded->originalTransactionId,
+                        'purchase_token' => $request->transaction_id,
+                        'has_subscribed' => true,
+                        'on_trial_mode' => ($decoded->offerType ?? null) === 1,
+                    ]
+                );
+
                 return [
                     'valid' => true,
                     'product_id' => $decoded->productId,
                     'expires_at' => Carbon::createFromTimestampMs($decoded->expirationDate),
-                    'data' => $decoded,
                 ];
             }
+
+            // expired → persist state
+            Subscription::where('user_id', $request->user_id)->update([
+                'has_subscribed' => false,
+            ]);
 
             return [
                 'valid' => false,
                 'reason' => 'subscription_expired',
-                'data' => $decoded,
             ];
         } catch (\Throwable $e) {
             return [
