@@ -24,6 +24,7 @@ class Subscription extends Model
         'product_id',
         'purchase_token',
         'sub_id',
+        'product_id',
     ];
 
     protected $appends = ['server_time'];

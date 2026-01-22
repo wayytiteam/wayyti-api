@@ -76,14 +76,6 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Subscription $subscriptions)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Subscription $subscription)
@@ -159,12 +151,16 @@ class SubscriptionController extends Controller
             'transaction_id' => 'required|string',
             'user_id' => 'required|exists:users,id',
         ]);
+
         if ($validator->fails()) {
             return response($validator->errors(), 400);
         }
+
         try {
+            // Generate App Store Server API JWT
             $jwt_token = app(AppStoreJwtService::class)->generateToken();
 
+            // Sandbox transaction lookup
             $url = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/transactions/'.
                 $request->transaction_id;
 
@@ -177,13 +173,14 @@ class SubscriptionController extends Controller
                 return [
                     'valid' => false,
                     'reason' => 'apple_api_error',
-                    'desc' => $response->body(),
                     'status' => $response->status(),
+                    'desc' => $response->body(),
                 ];
             }
 
             $data = $response->json();
 
+            // signedTransactionInfo is a JWT
             $signed_transaction_info = $data['signedTransactionInfo'] ?? null;
 
             if (! $signed_transaction_info) {
@@ -192,9 +189,17 @@ class SubscriptionController extends Controller
                     'reason' => 'missing_signed_transaction_info',
                 ];
             }
-
             $decoded = app(AppStoreJwtService::class)
                 ->decodeToken($signed_transaction_info);
+            if (! isset($decoded->expiresDate)) {
+                return [
+                    'valid' => false,
+                    'reason' => 'missing_expires_date',
+                ];
+            }
+
+            $expires_at = Carbon::createFromTimestampMs($decoded->expiresDate);
+            $is_active = $expires_at->isFuture();
 
             Subscription::updateOrCreate(
                 [
@@ -205,15 +210,21 @@ class SubscriptionController extends Controller
                     'product_id' => $decoded->productId,
                     'subscription_id' => $decoded->originalTransactionId,
                     'purchase_token' => $request->transaction_id,
-                    'has_subscribed' => true,
+                    'has_subscribed' => $is_active,          // false if expired
                     'on_trial_mode' => ($decoded->offerType ?? null) === 1,
+                    'expires_at' => $expires_at,              // always saved
                 ]
             );
 
-            return [
+            return response([
+                'valid' => true,
+                'active' => $is_active,
+                'expired' => ! $is_active,
                 'product_id' => $decoded->productId,
-                'expires_at' => Carbon::createFromTimestampMs($decoded->expirationDate),
-            ];
+                'expires_at' => $expires_at,
+                'environment' => $decoded->environment ?? null,
+                'transaction_reason' => $decoded->transactionReason ?? null,
+            ], 200);
         } catch (\Throwable $e) {
             return [
                 'valid' => false,
@@ -222,38 +233,4 @@ class SubscriptionController extends Controller
             ];
         }
     }
-    // public function verify_subscription(Request $request) {
-    //     $client = new Client();
-    //     $bucket_file = 'google-play-service-key.json';
-    //     $local_file_path = storage_path('google-play-service-key.json');
-    //     // dd($local_file_path);
-    //     $file_content = Storage::disk('s3')->get($bucket_file);
-    //     file_put_contents($local_file_path, $file_content);
-    //     $client->setAuthConfig($local_file_path);
-    //     // $client->addScope(AndroidPublisher::ANDROIDPUBLISHER);
-    //     $client->addScope('https://www.googleapis.com/auth/androidpublisher');
-    //     $service = new AndroidPublisher($client);
-    //     try {
-    //         $subscription = $service->purchases_subscriptions->get($request->package_name, $request->product_id, $request->purchase_token);
-    //         // return $subscription->paymentState;
-    //         dd($subscription);
-    //     } catch (\Exception $e) {
-    //         return $e;
-    //     }
-    // }
-
-    // public function subscription_check(){
-    //     $subscriptions = Subscription::get();
-    //     foreach($subscriptions as $subscription) {
-    //         if(!$subscription->has_subscribed){
-    //             if($subscription->on_trial_mode) {
-    //                 $trial_months_duration = Carbon::parse($subscription->updated_at)->floatDiffInMonths(Carbon::now());
-    //                 if($trial_months_duration >= 2) {
-    //                     $subscription->on_trial_mode = false;
-    //                     $subscription->save();
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
