@@ -196,39 +196,23 @@ class SubscriptionController extends Controller
             $decoded = app(AppStoreJwtService::class)
                 ->decodeToken($signed_transaction_info);
 
-            if (
-                isset($decoded->expirationDate) &&
-                now()->timestamp * 1000 < $decoded->expirationDate
-            ) {
-                Subscription::updateOrCreate(
-                    [
-                        'user_id' => $request->user_id,
-                    ],
-                    [
-                        'type' => $request->type ?? 'apple_pay',
-                        'product_id' => $decoded->productId,
-                        'subscription_id' => $decoded->originalTransactionId,
-                        'purchase_token' => $request->transaction_id,
-                        'has_subscribed' => true,
-                        'on_trial_mode' => ($decoded->offerType ?? null) === 1,
-                    ]
-                );
-
-                return [
-                    'valid' => true,
+            Subscription::updateOrCreate(
+                [
+                    'user_id' => $request->user_id,
+                ],
+                [
+                    'type' => $request->type ?? 'apple_pay',
                     'product_id' => $decoded->productId,
-                    'expires_at' => Carbon::createFromTimestampMs($decoded->expirationDate),
-                ];
-            }
-
-            // expired → persist state
-            Subscription::where('user_id', $request->user_id)->update([
-                'has_subscribed' => false,
-            ]);
+                    'subscription_id' => $decoded->originalTransactionId,
+                    'purchase_token' => $request->transaction_id,
+                    'has_subscribed' => true,
+                    'on_trial_mode' => ($decoded->offerType ?? null) === 1,
+                ]
+            );
 
             return [
-                'valid' => false,
-                'reason' => 'subscription_expired',
+                'product_id' => $decoded->productId,
+                'expires_at' => Carbon::createFromTimestampMs($decoded->expirationDate),
             ];
         } catch (\Throwable $e) {
             return [
